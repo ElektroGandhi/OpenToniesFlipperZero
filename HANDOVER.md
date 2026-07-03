@@ -31,10 +31,19 @@ Sammlung solcher Figuren-Dumps mit Bildern in einer bedienbaren Oberfläche.
 | Umbenannt in **OpenTonies** + „T"-Icon | ✅ | `loader info: "OpenTonies" is running` |
 | Homescreen-Favorit (Momentum) gesetzt | ✅ (Datei) | `/ext/favorites.txt` → fap-Pfad |
 | 879 Icons mit **dezenter Kontur** auf SD | ✅ | Icon vom Gerät byte-identisch zurückgelesen |
+| **Wiedergabe an echter Toniebox** | ✅ | 2026-07-03 vom Nutzer bestätigt |
+| **LED-Blink (zyan) während Emulation** | ✅ | `sequence_blink_start_cyan` / `…_stop`; Emulate+Stop headless ohne Crash |
 
-**Noch NICHT gerätetestbar (headless):** die tatsächliche Wiedergabe an der echten
-Toniebox und die „Halten-zum-Starten"-Geste auf dem Homescreen. Beides muss der
-Nutzer am Gerät bestätigen.
+**Noch NICHT gerätetestbar (headless):** nur noch die „Halten-zum-Starten"-Geste auf
+dem Homescreen. Muss der Nutzer am Gerät bestätigen.
+
+**Gelöst 2026-07-03 — „Figur wird nicht emuliert":** War ein Fehlalarm. Die Emulation
+lief bereits, aber die App gab **keine LED-Rückmeldung** — anders als das eingebaute
+NFC-Emulieren, wo die LED blinkt. Das wirkte wie „tot". Fix: `emulate_start()` startet
+ein zyanfarbenes Dauerblinken (`notification_message(&sequence_blink_start_cyan)`),
+`emulate_stop()` beendet es (`&sequence_blink_stop`); `NotificationApp*` via
+`RECORD_NOTIFICATION` im Lifecycle. Symbole sind in der FAP-API (87.1) exportiert,
+`APPCHK` grün.
 
 **Vorbelegte Favoriten:** `Bibi Blocksberg`, `Bibi & Tina`.
 

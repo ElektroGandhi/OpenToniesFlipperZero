@@ -20,7 +20,9 @@ Exakte Bildschirm-Vorschau: `preview_hochformat.png`
 ## Bedienung (Flipper senkrecht halten)
 - **← → / ↑ ↓**  vorige / nächste Serie bzw. Geschichte (alle Richtungen
   navigieren; **Taste halten = schnell blättern**)
-- **OK**  Serie öffnen · Geschichte **abspielen** → Flipper auf die Box legen
+- **OK**  Serie öffnen · Geschichte **abspielen** → Flipper auf die Box legen.
+  Während der Emulation **blinkt die LED zyan** (wie beim eingebauten NFC-Emulieren)
+  als Anzeige, dass die Figur aktiv gesendet wird.
 - **OK lange halten** (in der Serien-Ansicht)  Serie als **Favorit** ⭐
   markieren / entfernen
 - **Zurück**  Emulation stoppen / eine Ebene zurück / App verlassen
@@ -70,4 +72,6 @@ sein.
 `start series=255 icon_c=1 orient=vertical` (Hochformat + Bild lädt),
 `emulate ok proto=SLIX` (direkte Emulation). 879 Hochformat-Icons auf dem Gerät
 (612 echte Tonie-Bilder, 12 Symbol-Fallbacks, 255 Serien-Bilder).
-Tatsächliche Wiedergabe bitte an der echten Toniebox testen.
+Emulation an der echten Toniebox **läuft** (2026-07-03 bestätigt). Neu: LED-Blinken
+(zyan) während der Emulation als sichtbare Rückmeldung — vorher blinkte nichts,
+was fälschlich wie „keine Emulation" wirkte.

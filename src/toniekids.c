@@ -9,6 +9,8 @@
 #include <nfc/nfc.h>
 #include <nfc/nfc_device.h>
 #include <nfc/nfc_listener.h>
+#include <notification/notification.h>
+#include <notification/notification_messages.h>
 
 #define TONIE_DIR "/ext/nfc/Toniebox Figuren"
 #define ICON_DIR  "/ext/apps_data/toniekids/icons_p" // Hochformat 64x96
@@ -42,6 +44,7 @@ typedef struct {
     ViewPort* view_port;
     FuriMessageQueue* queue;
     Storage* storage;
+    NotificationApp* notifications;
 
     Screen screen;
     StrList series;
@@ -297,6 +300,9 @@ static bool emulate_start(App* app) {
     app->listener = nfc_listener_alloc(app->nfc, proto, data);
     nfc_listener_start(app->listener, listener_cb, app);
     app->emulating = true;
+    // LED blinkt durchgehend, solange emuliert wird (wie beim eingebauten NFC-Emulieren),
+    // damit sichtbar ist, dass die Figur aktiv gesendet wird.
+    notification_message(app->notifications, &sequence_blink_start_cyan);
     {
         char line[96];
         snprintf(
@@ -307,6 +313,9 @@ static bool emulate_start(App* app) {
     return true;
 }
 static void emulate_stop(App* app) {
+    if(app->emulating) {
+        notification_message(app->notifications, &sequence_blink_stop);
+    }
     if(app->listener) {
         nfc_listener_stop(app->listener);
         nfc_listener_free(app->listener);
@@ -494,6 +503,7 @@ static App* app_alloc(void) {
     app->queue = furi_message_queue_alloc(8, sizeof(InputEvent));
     app->storage = furi_record_open(RECORD_STORAGE);
     app->gui = furi_record_open(RECORD_GUI);
+    app->notifications = furi_record_open(RECORD_NOTIFICATION);
     app->view_port = view_port_alloc();
     view_port_set_orientation(app->view_port, ViewPortOrientationVertical);
     strlist_init(&app->series);
@@ -515,6 +525,7 @@ static void app_free(App* app) {
     strlist_clear(&app->favorites);
     furi_record_close(RECORD_GUI);
     furi_record_close(RECORD_STORAGE);
+    furi_record_close(RECORD_NOTIFICATION);
     furi_message_queue_free(app->queue);
     furi_mutex_free(app->mutex);
     free(app);

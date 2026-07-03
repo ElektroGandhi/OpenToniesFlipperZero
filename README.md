@@ -127,6 +127,20 @@ Diese Features sind **angekündigt** und in Planung:
 
 > Ideen, Wünsche oder Pull Requests dazu sind willkommen — Issues gern aufmachen.
 
+## Vollständig vibecoded — und das ist gut so 🎈
+
+Volle Transparenz: OpenTonies ist **komplett „vibecoded"**. Die **Idee**, das Konzept, das
+Hochformat, die Favoriten, die kindgerechte Bedienung — alles von **mir**. Den **Code** hat
+eine KI geschrieben, Schritt für Schritt nach meiner Ansage.
+
+Und das ist ausdrücklich **nichts Schlechtes** — im Gegenteil. **Vibecoding** macht das
+Programmieren-Können optional: Wer eine gute Idee hat, aber (noch) nicht selbst coden kann,
+war früher außen vor. Heute lässt sich genau diese Hürde überwinden. Aus „ich kann das
+nicht bauen" wird „ich beschreibe, was ich will — und es entsteht". Für mich ist das ein
+Weg, die **Barriere „nicht programmieren können" zu umgehen**; die Idee bleibt meine, das
+Werkzeug hilft nur beim Umsetzen. OpenTonies ist der lebende Beweis, dass dabei etwas
+Echtes und Nützliches herauskommt.
+
 ## Danke / auf den Schultern von Riesen
 
 OpenTonies gäbe es nicht ohne die Vorarbeit dieser Projekte:

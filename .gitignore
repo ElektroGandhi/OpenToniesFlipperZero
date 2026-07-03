@@ -1,0 +1,30 @@
+# Build-Artefakte
+dist/
+build/
+*.o
+*.d
+*.elf
+*.map
+__pycache__/
+.ufbt/
+.vscode/
+.DS_Store
+
+# ----------------------------------------------------------------------------
+# Urheberrechtlich geschuetztes Fremdmaterial – NIEMALS committen (siehe HANDOVER.md §11)
+# ----------------------------------------------------------------------------
+# Aus Tonie-Produktbildern abgeleitete Icons + Bild-Cache:
+icons/
+icons_p/
+icons_s/
+imgcache/
+# Vollstaendige Tonie-Datenbank (nur per URL referenzieren):
+tonies.json
+# Fremde SLIX-L-Dumps / Figuren:
+flipper-zero-tonies-master/
+Toniebox Figuren/
+*.nfc
+
+# matches.json referenziert Drittquellen-Bild-URLs. Standardmaessig behalten
+# (nur Titel->URL, regenerierbar via tools/genicons.py --dry). Bei Bedenken:
+# tools/matches.json

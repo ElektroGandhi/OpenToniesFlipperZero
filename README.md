@@ -1,77 +1,164 @@
-# OpenTonies – Flipper-Zero-App (HOCHFORMAT)
-(Menü-/Anzeigename: **OpenTonies**, Icon: Tonies-„T"; interne appid/Dateien
-weiterhin `toniekids`.)
+# OpenTonies · Flipper Zero
 
-Kinderfreundliches, grafisches Menü für die Toniebox-Figuren. Der Flipper wird
-**senkrecht/hochkant** gehalten (64×128); oben ein **großes Bild (64×96)** der
-Figur, darunter der Name. Zwei Ebenen: **Serie → Geschichte**. **OK auf einer
-Geschichte emuliert die SLIX-L-Figur direkt** für die Toniebox.
+> **Kinderfreundliche Tonie-Auswahl im Hochformat — Figur aussuchen, aufs Kästchen legen, Toniebox spielt.**
+> A kid-friendly Flipper Zero launcher that lets children pick a Tonie figure by its picture and emulates it (NXP ICODE SLIX-L) straight to the Toniebox.
 
-Exakte Bildschirm-Vorschau: `preview_hochformat.png`
+<p align="center">
+  <img src="preview_hochformat.png" alt="OpenTonies – Hochformat-Ansicht auf dem Flipper Zero" width="180">
+  &nbsp;&nbsp;&nbsp;
+  <img src="preview_kontur.png" alt="Icon mit Kontur (auch helle Figuren klar erkennbar)" width="180">
+</p>
 
-## Auf dem Flipper
-- App: `SD:/apps/NFC/toniekids.fap` → Menü **Apps → NFC → „OpenTonies"**
-- Bilder (64×96): `SD:/apps_data/toniekids/icons_p/<Serie>/<Geschichte>.fxbm`
-  (je Serie zusätzlich `_series.fxbm`)
-- Figuren: liest direkt `SD:/nfc/Toniebox Figuren/<Serie>/<Geschichte>.nfc`
-- (Alte Querformat-Bilder unter `icons/` und `icons_s/` werden nicht mehr
-  gebraucht und können gelöscht werden.)
+---
+
+## Was ist das?
+
+**OpenTonies** ist eine selbst entwickelte **Flipper-Zero-App** (in C, als `.fap`), die dem
+Kind erlaubt, **Tonie-Figuren grafisch auszuwählen und direkt zu emulieren** — die
+**Toniebox** erkennt die Figur und spielt sie ab.
+
+Der Flipper wird **senkrecht** gehalten (64×128). Oben ein **großes Bild** der Figur,
+darunter der Name. Zwei Ebenen: **Serie → Geschichte**. **OK** auf einer Geschichte
+emuliert die SLIX-L-Figur, dann den Flipper einfach auf die Box legen. Während der
+Emulation **blinkt die LED zyan** als klare Rückmeldung, dass gesendet wird.
+
+Technischer Hintergrund: Die Toniebox liest Tonie-Figuren per NFC (NXP **ICODE SLIX-L**,
+ISO 15693). Der Flipper Zero kann diese Tags lesen und emulieren. OpenTonies bündelt eine
+ganze Sammlung eigener Figuren-Dumps mit aufbereiteten Bildern in einer Oberfläche, die
+auch ein Vierjähriger bedienen kann.
+
+## Für wen ist das?
+
+- **Familien mit Toniebox + Flipper Zero**, die ihre **eigenen** Figuren an einem Ort
+  bündeln wollen — z. B. um die (teils empfindlichen) Original-Figuren zu schonen, den
+  Figuren-Berg zu ersetzen oder auf Reisen nur ein Gerät mitzunehmen.
+- **Kinder**, die noch nicht lesen: Auswahl läuft über **Bilder**, nicht über Text.
+- **Bastler & die Toniebox-Reverse-Engineering-Community**, die eine saubere,
+  daten­getriebene Referenz-App für SLIX-L-Emulation auf **Momentum**-Firmware suchen.
+
+> ⚠️ OpenTonies enthält **keine** fremden Inhalte. Es ist ein Werkzeug, mit dem du
+> **deine eigenen** Tonies spiegelst. Siehe [Rechtliches](#rechtliches--disclaimer).
+
+## Features
+
+- 📱 **Hochformat-UI** (64×128) mit großem Figuren-Bild und Name.
+- 🗂️ **Zwei Ebenen**: Serie → Geschichte, komplett bild­geführt.
+- ⭐ **Favoriten**: Lieblingsserien landen ganz vorne (Toggle per **langem OK**), damit
+  man nicht durch alle 255 Serien blättern muss.
+- ⚡ **Direkte SLIX-L-Emulation** bei OK — exakt der Weg der eingebauten NFC-App
+  (`NfcProtocolSlix`, `SlixTypeSlixL`).
+- 💡 **LED-Blink** (zyan) während der Emulation als sichtbares „läuft"-Signal.
+- 🖼️ **Kontur-Icons**: auch helle Figuren (König der Löwen, Elsa) bleiben klar erkennbar.
+- 🔌 **Datengetrieben**: keine fest eingebaute Figurenliste — alles wird zur Laufzeit von
+  der SD gelesen. Neue Tonies erscheinen automatisch.
 
 ## Bedienung (Flipper senkrecht halten)
-- **← → / ↑ ↓**  vorige / nächste Serie bzw. Geschichte (alle Richtungen
-  navigieren; **Taste halten = schnell blättern**)
-- **OK**  Serie öffnen · Geschichte **abspielen** → Flipper auf die Box legen.
-  Während der Emulation **blinkt die LED zyan** (wie beim eingebauten NFC-Emulieren)
-  als Anzeige, dass die Figur aktiv gesendet wird.
-- **OK lange halten** (in der Serien-Ansicht)  Serie als **Favorit** ⭐
-  markieren / entfernen
-- **Zurück**  Emulation stoppen / eine Ebene zurück / App verlassen
 
-## Favoriten ⭐
-Lieblingsserien werden **immer zuerst** gezeigt (mit ⭐), damit man nicht durch
-alle 255 Serien blättern muss. Toggeln mit **langem OK** auf einer Serie.
-Gespeichert in `SD:/apps_data/toniekids/favorites.txt` (eine Serie pro Zeile) —
-kann auch am PC bearbeitet werden. Vorbelegt: **Bibi Blocksberg**, **Bibi & Tina**.
+| Taste | Aktion |
+|---|---|
+| **← → / ↑ ↓** | vorige / nächste Serie bzw. Geschichte (alle Richtungen; **halten = schnell blättern**) |
+| **OK** | Serie öffnen · Geschichte **abspielen** → Flipper auf die Box legen |
+| **OK lang** (Serien-Ansicht) | Serie als **Favorit** ⭐ markieren / entfernen |
+| **Zurück** | Emulation stoppen / eine Ebene zurück / App verlassen |
 
-Neue Tonies erscheinen automatisch: `.nfc`-Dump in `nfc/Toniebox Figuren/<Serie>/`
-legen (Bild optional).
+## Installation
 
-## Bildaufbereitung
-`tools/gen4.py` (aktuell): auf das Motiv **zuschneiden**, Motiv vom weißen
-Hintergrund trennen und eine **schwarze Kontur** drumherum ziehen, Innenbereich
-kräftig kontrastieren + **Atkinson-Dithering**, Größe **64×96 hochkant**. Die
-Kontur macht die Figur klar erkennbar — auch **helle** Figuren (z. B. König der
-Löwen, Elsa), die sonst fast weiß/unsichtbar wären. (`gen3.py` = Vorgänger ohne
-Kontur.) Format `.fxbm`: 2 Byte Header `[B][H]`, dann XBM-Bitmap (LSB-first,
-gesetztes Bit = schwarz), zeilenweise byte-aligned. Kontur-Vorschau:
-`preview_kontur.png`.
+Voraussetzung: Flipper Zero mit **Momentum**-Firmware.
 
-## Icons neu erzeugen / erweitern (z. B. Englisch/Französisch)
+```sh
+# 1) Build-Umgebung (ufbt gegen Momentum-dev-SDK)
+pip install --user ufbt
+ufbt update --channel=dev --index-url=https://up.momentum-fw.dev/firmware/directory.json
+
+# 2) App bauen + aufs Gerät
+cd src && ufbt            # -> dist/toniekids.fap
+ufbt launch              # installiert nach /ext/apps/NFC/ und startet
+```
+
+Danach im Menü **Apps → NFC → „OpenTonies"**.
+
+## Wie es funktioniert (Architektur)
+
+Die App hält **keine** eingebettete Figurenliste, sondern liest zur Laufzeit von der SD:
+
+1. **Figuren/Struktur** — durchläuft `SD:/nfc/Toniebox Figuren/<Serie>/<Geschichte>.nfc`
+   (Serie = Ordner, Geschichte = `.nfc`-Datei).
+2. **Bilder** — lädt je Eintrag `SD:/apps_data/toniekids/icons_p/<Serie>/<Geschichte>.fxbm`
+   (Serien-Übersicht: `_series.fxbm`). Format `.fxbm` = 2-Byte-Header `[Breite][Höhe]` +
+   XBM-Bitmap (LSB-first, gesetztes Bit = schwarz), 64×96.
+3. **Emulation** — bei OK: `nfc_device_load()` → `nfc_listener_start()` mit Protokoll
+   `NfcProtocolSlix` (`SlixTypeSlixL`).
+4. **Favoriten** — `SD:/apps_data/toniekids/favorites.txt` (eine Serie pro Zeile).
+
+## Eigene Tonies hinzufügen
+
+`.nfc`-Dump der **eigenen** Figur nach `SD:/nfc/Toniebox Figuren/<Serie>/` legen — fertig,
+sie erscheint automatisch. Ein Bild ist optional (siehe Icon-Pipeline).
+
+## Icon-Pipeline (Bilder erzeugen)
+
 ```sh
 python3 tools/genicons.py --dry   # Match gegen tonies.json -> matches.json
-python3 tools/gen4.py             # Bilder mit Kontur -> icons_p/ (64x96)
+python3 tools/gen4.py             # Zuschnitt + Maske + Kontur + Atkinson -> icons_p/ (64x96)
+# hochladen:
 python3 ~/.ufbt/current/scripts/storage.py -p /dev/ttyACM0 \
         send icons_p /ext/apps_data/toniekids/icons_p
 ```
 
-## App neu bauen (ufbt / Momentum-SDK)
-```sh
-pip install --user ufbt
-ufbt update --channel=dev --index-url=https://up.momentum-fw.dev/firmware/directory.json
-cd src && ufbt          # baut dist/toniekids.fap
-ufbt launch             # aufs Gerät + starten
-```
-Gegen das **Momentum-dev-SDK** bauen (passend zur Firmware, API 87.1).
+`gen4.py` schneidet aufs Motiv zu, trennt es vom weißen Hintergrund, zieht eine **1-px-Kontur**
+auf der Silhouette und dithert (Atkinson) — so bleiben auch helle Figuren erkennbar.
 
-## Wichtig beim Aktualisieren
-Wenn die App gerade läuft, lädt der Loader die neue `.fap` erst nach **Schließen
-und erneutem Öffnen**. Und: der Flipper muss zum Aufspielen **per USB verbunden**
-sein.
+## Roadmap — geplante Features
 
-## Status (verifiziert, headless über die Flipper-CLI)
-`start series=255 icon_c=1 orient=vertical` (Hochformat + Bild lädt),
-`emulate ok proto=SLIX` (direkte Emulation). 879 Hochformat-Icons auf dem Gerät
-(612 echte Tonie-Bilder, 12 Symbol-Fallbacks, 255 Serien-Bilder).
-Emulation an der echten Toniebox **läuft** (2026-07-03 bestätigt). Neu: LED-Blinken
-(zyan) während der Emulation als sichtbare Rückmeldung — vorher blinkte nichts,
-was fälschlich wie „keine Emulation" wirkte.
+Diese Features sind **angekündigt** und in Planung:
+
+- ⚙️ **Settings-Menü (in der App)** — konfigurierbar direkt am Flipper:
+  - LED-Farbe wählen oder Blink ganz aus,
+  - Bild-Sprache umschalten (**DE / EN / FR**),
+  - Emulations-Timeout & Display-Helligkeit,
+  - Favoriten verwalten und Standard-Startserie,
+  - optional „Zuletzt gespielt".
+- 🤖 **Android-Companion-App** — die Sammlung bequem vom Handy pflegen:
+  - Figuren-Dumps & Bilder per **USB-OTG** auf den Flipper übertragen,
+  - **Icon-Pipeline am Telefon** (Zuschnitt/Kontur/Dithering) statt am PC,
+  - Favoriten & Reihenfolge synchronisieren,
+  - **Backup/Restore** der kompletten SD-Struktur,
+  - Bibliotheks-Browser mit Suche.
+
+> Ideen, Wünsche oder Pull Requests dazu sind willkommen — Issues gern aufmachen.
+
+## Danke / auf den Schultern von Riesen
+
+OpenTonies gäbe es nicht ohne die Vorarbeit dieser Projekte:
+
+- **[nortakales/flipper-zero-tonies](https://github.com/nortakales/flipper-zero-tonies)**
+  — Referenz & Ausgangspunkt für Tonie-SLIX-L-Dumps auf dem Flipper.
+- **[toniebox-reverse-engineering](https://github.com/toniebox-reverse-engineering)**
+  (RevvoX) — u. a.
+  **[tonies-json](https://github.com/toniebox-reverse-engineering/tonies-json)** (offene
+  Tonie-Datenbank, Bildquelle der Icon-Pipeline) und
+  **[teddyCloud](https://github.com/toniebox-reverse-engineering/teddyCloud)**.
+- **[Momentum Firmware](https://github.com/Next-Flip/Momentum-Firmware)** — die Firmware,
+  gegen die gebaut wird ([momentum-fw.dev](https://momentum-fw.dev)).
+- **[Flipper Zero](https://github.com/flipperdevices/flipperzero-firmware)** — das Gerät
+  und sein NFC-Stack, dessen SLIX-Listener OpenTonies nutzt.
+
+## Rechtliches / Disclaimer
+
+Dieses Repository enthält **nur eigenen Code, Werkzeuge und Doku**. **Nicht** enthalten
+(und nicht verteilt) sind:
+
+- **Tonie-NFC-Dumps** (`*.nfc`, `Toniebox Figuren/`) — fremde Inhalte, nur referenziert.
+- **Tonie-Produktbilder / abgeleitete Icons** (`icons_p/`, Bild-Cache) — urheberrechtlich
+  geschützt.
+- Die vollständige **`tonies.json`** — nur per URL referenziert.
+
+„Tonie", „Toniebox" und die Figuren sind Marken bzw. urheberrechtlich geschütztes Material
+der jeweiligen Rechteinhaber (Boxine GmbH). Dieses Projekt steht in **keiner** Verbindung
+zu Boxine/tonies. Nutze OpenTonies ausschließlich mit **deinen eigenen** Figuren im Rahmen
+der für dich geltenden Gesetze (Privatkopie/Interoperabilität).
+
+## Lizenz
+
+Eigener Code unter **MIT** — siehe [LICENSE](LICENSE). Die oben genannten Fremd-Inhalte
+sind davon ausgenommen und verbleiben bei ihren Rechteinhabern.

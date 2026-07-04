@@ -41,9 +41,9 @@ static const char* const LED_BRIGHT_NAME[] = {"niedrig", "mittel", "hoch"};
 static const uint16_t TIMER_MIN[] = {0, 30, 45, 60, 90};
 static const char* const TIMER_NAME[] = {"Aus", "30 min", "45 min", "60 min", "90 min"};
 #define TIMER_COUNT 5
-#define SETTINGS_COUNT 7
+#define SETTINGS_COUNT 8
 static const char* const SETTING_LABEL[] =
-    {"Schrift", "Bilder", "LED", "LED-Farbe", "Helligkeit", "Auto-Timer", "Aktion"};
+    {"Schrift", "Bilder", "LED", "LED-Farbe", "Helligkeit", "Auto-Timer", "Aktion", "Laufschrift"};
 
 // 13x13 Stern (Favoriten-Marker), XBM LSB-first
 static const uint8_t star_bits[] = {
@@ -93,11 +93,14 @@ typedef struct {
     uint8_t opt_led_bright; // Index in LED_BRIGHT_*
     uint8_t opt_timer_idx;  // Index in TIMER_* (0 = Aus)
     bool opt_timer_action;  // false = Aus (Strom sparen), true = Replay-Bounce
+    bool opt_scroll;        // lange Namen horizontal durchlaufen lassen (Laufschrift)
     size_t settings_idx;    // markierter Eintrag in der Setup-Seite
 
-    FuriTimer* timer;    // Auto-Aus/Replay-Timer
-    bool timer_fired;    // vom Timer gesetzt, in der Hauptschleife behandelt
-    bool replay_pending; // true = 5s-Pause vor Wiederaufstellen laeuft
+    FuriTimer* timer;         // Auto-Aus/Replay-Timer
+    bool timer_fired;         // vom Timer gesetzt, in der Hauptschleife behandelt
+    bool replay_pending;      // true = 5s-Pause vor Wiederaufstellen laeuft
+    FuriTimer* scroll_timer;  // periodischer Tick fuer die Laufschrift
+    uint16_t scroll_off;      // aktueller Marquee-Versatz (Pixel)
 
     bool running;
 } App;
@@ -217,6 +220,7 @@ static void read_dir(App* app, const char* path, bool want_dirs, StrList* out) {
 
 // ---------- Icon laden ----------
 static void reload_icon(App* app) {
+    app->scroll_off = 0; // neuer Name -> Laufschrift von vorne
     app->ic.valid = false;
     const char* series = NULL;
     const char* item = NULL; // NULL -> _series
@@ -312,6 +316,7 @@ static void load_settings(App* app) {
     app->opt_led_bright = 1;      // mittel
     app->opt_timer_idx = 0;       // Auto-Timer aus
     app->opt_timer_action = false;// Aktion: Aus
+    app->opt_scroll = false;      // Laufschrift aus
     File* f = storage_file_alloc(app->storage);
     if(storage_file_open(f, SETTINGS_FILE, FSAM_READ, FSOM_OPEN_EXISTING)) {
         char buf[256];
@@ -324,6 +329,7 @@ static void load_settings(App* app) {
         app->opt_led_bright = (uint8_t)(cfg_int(buf, "led_bright=", 1) % LED_BRIGHT_COUNT);
         app->opt_timer_idx = (uint8_t)(cfg_int(buf, "timer_idx=", 0) % TIMER_COUNT);
         app->opt_timer_action = cfg_int(buf, "timer_action=", 0) != 0;
+        app->opt_scroll = cfg_int(buf, "scroll=", 0) != 0;
     }
     storage_file_close(f);
     storage_file_free(f);
@@ -336,10 +342,10 @@ static void save_settings(App* app) {
         int m = snprintf(
             line, sizeof(line),
             "uppercase=%d\nhide_images=%d\nled_on=%d\nled_color=%d\nled_bright=%d\n"
-            "timer_idx=%d\ntimer_action=%d\n",
+            "timer_idx=%d\ntimer_action=%d\nscroll=%d\n",
             app->opt_uppercase ? 1 : 0, app->opt_hide_images ? 1 : 0, app->opt_led_on ? 1 : 0,
             app->opt_led_color, app->opt_led_bright, app->opt_timer_idx,
-            app->opt_timer_action ? 1 : 0);
+            app->opt_timer_action ? 1 : 0, app->opt_scroll ? 1 : 0);
         if(m > 0) storage_file_write(f, line, (size_t)m);
     }
     storage_file_close(f);
@@ -529,6 +535,14 @@ static void timer_cb(void* ctx) {
     InputEvent ev = {.type = InputTypeRelease, .key = InputKeyMAX};
     furi_message_queue_put(app->queue, &ev, 0);
 }
+// Marquee-Tick: lange Namen weiterschieben (nur auf Browse-Screens + Laufschrift an).
+static void scroll_cb(void* ctx) {
+    App* app = ctx;
+    if(app->opt_scroll && (app->screen == ScreenSeries || app->screen == ScreenEpisode)) {
+        app->scroll_off += 2;
+        view_port_update(app->view_port);
+    }
+}
 
 // ---------- Zeichnen (Hochformat 64x128) ----------
 static void draw_wrapped_ex(
@@ -576,6 +590,19 @@ static void disp_name(App* app, const char* raw, char* out, size_t out_sz) {
         out[n] = 0;
     }
 }
+// Laufschrift: passt der Text in die Breite w, statisch; sonst laeuft er horizontal durch
+// (nahtlos wiederholt), damit auch lange Namen komplett gelesen werden koennen.
+static void draw_marquee(Canvas* c, int x, int y, int w, const char* s, uint16_t off) {
+    uint16_t tw = canvas_string_width(c, s);
+    if((int)tw <= w) {
+        canvas_draw_str(c, x, y, s);
+        return;
+    }
+    int period = (int)tw + 16; // Textbreite + Luecke
+    int o = (int)(off % (uint16_t)period);
+    canvas_draw_str(c, x - o, y, s);
+    canvas_draw_str(c, x - o + period, y, s);
+}
 // Aktuellen Wert eines Setup-Eintrags als Text.
 static void setting_value(App* app, int i, char* out, size_t n) {
     switch(i) {
@@ -586,6 +613,7 @@ static void setting_value(App* app, int i, char* out, size_t n) {
     case 4: snprintf(out, n, "%s", LED_BRIGHT_NAME[app->opt_led_bright]); break;
     case 5: snprintf(out, n, "%s", TIMER_NAME[app->opt_timer_idx]); break;
     case 6: snprintf(out, n, "%s", app->opt_timer_action ? "Replay" : "Aus"); break;
+    case 7: snprintf(out, n, "%s", app->opt_scroll ? "AN" : "AUS"); break;
     default: out[0] = 0; break;
     }
 }
@@ -637,15 +665,22 @@ static void draw_callback(Canvas* canvas, void* ctx) {
         char nm[80];
         disp_name(app, sname, nm, sizeof(nm));
         if(app->opt_hide_images) {
-            if(fav) canvas_draw_xbm(canvas, 1, 1, 13, 13, star_bits);
+            if(fav && !app->opt_scroll) canvas_draw_xbm(canvas, 1, 1, 13, 13, star_bits);
             canvas_set_font(canvas, FontPrimary);
-            draw_wrapped_ex(canvas, 2, 26, 60, nm, 5, 13, 7);
+            if(app->opt_scroll)
+                draw_marquee(canvas, 2, 55, 60, nm, app->scroll_off);
+            else
+                draw_wrapped_ex(canvas, 2, 26, 60, nm, 5, 13, 7);
         } else {
             draw_image(app, canvas);
             canvas_draw_line(canvas, 0, 98, 63, 98);
-            if(fav) canvas_draw_xbm(canvas, 1, 100, 13, 13, star_bits);
             canvas_set_font(canvas, FontSecondary);
-            draw_wrapped_ex(canvas, fav ? 16 : 1, 108, fav ? 46 : 62, nm, 2, 10, 5);
+            if(app->opt_scroll) {
+                draw_marquee(canvas, 1, 116, 62, nm, app->scroll_off);
+            } else {
+                if(fav) canvas_draw_xbm(canvas, 1, 100, 13, 13, star_bits);
+                draw_wrapped_ex(canvas, fav ? 16 : 1, 108, fav ? 46 : 62, nm, 2, 10, 5);
+            }
         }
         canvas_set_font(canvas, FontSecondary);
         char cnt[16];
@@ -661,12 +696,18 @@ static void draw_callback(Canvas* canvas, void* ctx) {
             disp_name(app, ep, nm, sizeof(nm));
             if(app->opt_hide_images) {
                 canvas_set_font(canvas, FontPrimary);
-                draw_wrapped_ex(canvas, 2, 26, 60, nm, 5, 13, 7);
+                if(app->opt_scroll)
+                    draw_marquee(canvas, 2, 55, 60, nm, app->scroll_off);
+                else
+                    draw_wrapped_ex(canvas, 2, 26, 60, nm, 5, 13, 7);
             } else {
                 draw_image(app, canvas);
                 canvas_draw_line(canvas, 0, 98, 63, 98);
                 canvas_set_font(canvas, FontSecondary);
-                draw_wrapped_ex(canvas, 1, 108, 62, nm, 2, 10, 5);
+                if(app->opt_scroll)
+                    draw_marquee(canvas, 1, 116, 62, nm, app->scroll_off);
+                else
+                    draw_wrapped_ex(canvas, 1, 108, 62, nm, 2, 10, 5);
             }
             canvas_set_font(canvas, FontSecondary);
             char cnt[16];
@@ -781,6 +822,7 @@ static void handle_key(App* app, InputKey key) {
             case 4: app->opt_led_bright = (app->opt_led_bright + 1) % LED_BRIGHT_COUNT; break;
             case 5: app->opt_timer_idx = (app->opt_timer_idx + 1) % TIMER_COUNT; break;
             case 6: app->opt_timer_action = !app->opt_timer_action; break;
+            case 7: app->opt_scroll = !app->opt_scroll; break;
             default: break;
             }
             save_settings(app);
@@ -815,10 +857,16 @@ static App* app_alloc(void) {
     view_port_draw_callback_set(app->view_port, draw_callback, app);
     view_port_input_callback_set(app->view_port, input_callback, app);
     gui_add_view_port(app->gui, app->view_port, GuiLayerFullscreen);
+    app->scroll_timer = furi_timer_alloc(scroll_cb, FuriTimerTypePeriodic, app);
+    furi_timer_start(app->scroll_timer, 70);
     return app;
 }
 static void app_free(App* app) {
     emulate_stop(app);
+    if(app->scroll_timer) {
+        furi_timer_stop(app->scroll_timer);
+        furi_timer_free(app->scroll_timer);
+    }
     if(app->timer) furi_timer_free(app->timer);
     gui_remove_view_port(app->gui, app->view_port);
     view_port_free(app->view_port);

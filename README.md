@@ -134,6 +134,7 @@ zwei Sekunden erreichbar:
 | **Helligkeit** | niedrig / mittel / hoch | Helligkeit der LED. |
 | **Auto-Timer** | Aus / 30 / 45 / 60 / 90 min | Beendet die Emulation nach Ablauf (Strom sparen). Nutzt die **echte Spieldauer** des Tonies, falls bekannt — sonst den eingestellten Wert als Fallback. |
 | **Aktion** | `Aus` / `Replay` | Nach der Timer-Zeit: **Aus** = Emulation stoppen · **Replay** = kurz aus (5 s) & wieder an, um „neu aufstellen" zu simulieren (experimentell). |
+| **Laufschrift** | `AN` / `AUS` | `AN` = zu lange Namen **laufen horizontal durch** (statt abgeschnitten), damit das Kind auch komplette lange Titel lesen kann. |
 
 Gespeichert in `SD:/apps_data/toniekids/settings.txt`; überlebt Neustarts. Standard:
 Schrift **GROSS**, Bilder **an**, LED **an** (zyan/mittel), Auto-Timer **aus**.

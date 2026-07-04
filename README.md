@@ -112,18 +112,29 @@ python3 ~/.ufbt/current/scripts/storage.py -p /dev/ttyACM0 \
 `gen4.py` schneidet aufs Motiv zu, trennt es vom weißen Hintergrund, zieht eine **1-px-Kontur**
 auf der Silhouette und dithert (Atkinson) — so bleiben auch helle Figuren erkennbar.
 
-## Einstellungen & Roadmap
+## Einstellungen (verstecktes Setup)
 
-**Schon da — verstecktes Setup** (Zugang: **langes Zurück** auf der Serien-/Episoden-Ebene,
-für Kinder nicht offensichtlich; im Setup: **OK** ändert, **Zurück** speichert):
+Das Setup ist bewusst **versteckt** (für Kinder nicht offensichtlich) — für Eltern aber in
+zwei Sekunden erreichbar:
 
-- **Schrift**: GROSSBUCHSTABEN oder normal.
-- **Bilder**: an — oder **Lese-Modus ohne Bilder**, damit das Kind den Titel wirklich
-  *liest* statt am Bild abzulesen (Lesenlernen).
+**So öffnest du es:**
 
-Gespeichert in `SD:/apps_data/toniekids/settings.txt` (`uppercase=`, `hide_images=`).
+1. Auf der **Serien-** oder **Geschichten-Ansicht** die **Zurück-Taste ca. 1 Sekunde
+   gedrückt halten** (langer Druck) → es erscheint **SETUP**.
+2. **↑ / ↓** wählt den Eintrag, **OK** schaltet ihn um, **Zurück** speichert & schließt.
 
-**Geplant:**
+**Was du einstellen kannst:**
+
+| Eintrag | Optionen | Wirkung |
+|---|---|---|
+| **Schrift** | `GROSS` / `klein` | Namen komplett in Großbuchstaben oder normal. |
+| **Bilder** | `AN` / `AUS` | `AUS` = **Lese-Modus**: nur der Titel (groß), damit das Kind *liest* statt am Bild abzulesen. |
+
+Die Einstellungen bleiben gespeichert (`SD:/apps_data/toniekids/settings.txt`,
+Schlüssel `uppercase=` / `hide_images=`) und überleben Neustarts. Standard: Schrift **GROSS**,
+Bilder **an**.
+
+## Roadmap
 
 - ⚙️ Mehr Setup-Optionen (LED-Farbe/aus, Bild-Sprache **DE/EN/FR**, Emulations-Timeout).
 - 🤖 **Android-Companion-App** — die Sammlung bequem vom Handy pflegen:

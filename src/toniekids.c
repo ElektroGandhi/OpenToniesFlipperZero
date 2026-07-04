@@ -609,6 +609,14 @@ static void draw_marquee(Canvas* c, int x, int y, int w, const char* s, uint16_t
     canvas_draw_str(c, x - o, y, s);
     canvas_draw_str(c, x - o + period, y, s);
 }
+// Favoriten-Stern deckend zeichnen (raeumt den Hintergrund frei), damit er auch ueber
+// der Laufschrift sichtbar bleibt.
+static void draw_star(Canvas* c, int x, int y) {
+    canvas_set_color(c, ColorWhite);
+    canvas_draw_box(c, x - 1, y - 1, 15, 15);
+    canvas_set_color(c, ColorBlack);
+    canvas_draw_xbm(c, x, y, 13, 13, star_bits);
+}
 // Aktuellen Wert eines Setup-Eintrags als Text.
 static void setting_value(App* app, int i, char* out, size_t n) {
     switch(i) {
@@ -671,22 +679,21 @@ static void draw_callback(Canvas* canvas, void* ctx) {
         char nm[80];
         disp_name(app, sname, nm, sizeof(nm));
         if(app->opt_hide_images) {
-            if(fav && !app->opt_scroll) canvas_draw_xbm(canvas, 1, 1, 13, 13, star_bits);
             canvas_set_font(canvas, FontPrimary);
             if(app->opt_scroll)
                 draw_marquee(canvas, 2, 55, 60, nm, app->scroll_off);
             else
                 draw_wrapped_ex(canvas, 2, 26, 60, nm, 5, 13, 7);
+            if(fav) draw_star(canvas, 1, 1);
         } else {
             draw_image(app, canvas);
             canvas_draw_line(canvas, 0, 98, 63, 98);
             canvas_set_font(canvas, FontSecondary);
-            if(app->opt_scroll) {
+            if(app->opt_scroll)
                 draw_marquee(canvas, 1, 116, 62, nm, app->scroll_off);
-            } else {
-                if(fav) canvas_draw_xbm(canvas, 1, 100, 13, 13, star_bits);
+            else
                 draw_wrapped_ex(canvas, fav ? 16 : 1, 108, fav ? 46 : 62, nm, 2, 10, 5);
-            }
+            if(fav) draw_star(canvas, 1, 100);
         }
         canvas_set_font(canvas, FontSecondary);
         char cnt[16];

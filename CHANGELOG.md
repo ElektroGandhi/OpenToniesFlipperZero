@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.0-beta.2 — Hotfix (2026-07-04)
+
+### Fixes
+- **Favoriten-Stern** wurde bei aktiver Laufschrift nicht mehr angezeigt — der Stern wird
+  jetzt **immer** gezeigt (deckend gezeichnet, auch über dem Lauftext).
+
 ## v1.0.0-beta.1 — erste Beta (2026-07-04)
 
 Erste öffentliche **Beta** von **OpenTonies** für den Flipper Zero. Das ist genau die

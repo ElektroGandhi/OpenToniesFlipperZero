@@ -28,3 +28,7 @@ Toniebox Figuren/
 # matches.json referenziert Drittquellen-Bild-URLs. Standardmaessig behalten
 # (nur Titel->URL, regenerierbar via tools/genicons.py --dry). Bei Bedenken:
 # tools/matches.json
+
+# Spieldauer-Tabelle (Titel->Minuten, von tonies.com gescrapt; sammlungsabgeleitet,
+# regenerierbar via tools/gen_durations.py) -> nicht committen:
+tools/durations.txt

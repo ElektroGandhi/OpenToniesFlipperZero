@@ -9,8 +9,8 @@
 #include <nfc/nfc.h>
 #include <nfc/nfc_device.h>
 #include <nfc/nfc_listener.h>
-#include <notification/notification.h>
-#include <notification/notification_messages.h>
+#include <furi_hal_light.h>
+#include <furi_hal_resources.h>
 
 #define TONIE_DIR "/ext/nfc/Toniebox Figuren"
 #define ICON_DIR  "/ext/apps_data/toniekids/icons_p" // Hochformat 64x96
@@ -19,6 +19,31 @@
 #define ICON_MAX_BYTES ((ICON_W / 8) * ICON_H) // 768
 #define FAV_FILE "/ext/apps_data/toniekids/favorites.txt"
 #define SETTINGS_FILE "/ext/apps_data/toniekids/settings.txt"
+#define DURATIONS_FILE "/ext/apps_data/toniekids/durations.txt"
+
+// LED-Farbpalette (Light-Kanalmasken) + Anzeigenamen
+static const uint8_t LED_COLOR_MASK[] = {
+    LightGreen | LightBlue,            // Zyan
+    LightBlue,                         // Blau
+    LightGreen,                        // Gruen
+    LightRed,                          // Rot
+    LightRed | LightBlue,              // Magenta
+    LightRed | LightGreen,             // Gelb
+    LightRed | LightGreen | LightBlue, // Weiss
+};
+static const char* const LED_COLOR_NAME[] =
+    {"Zyan", "Blau", "Gruen", "Rot", "Magenta", "Gelb", "Weiss"};
+#define LED_COLOR_COUNT 7
+static const uint8_t LED_BRIGHT_VAL[] = {30, 120, 255};
+static const char* const LED_BRIGHT_NAME[] = {"niedrig", "mittel", "hoch"};
+#define LED_BRIGHT_COUNT 3
+// Auto-Timer: Index 0 = Aus; sonst Fallback-Minuten (echte Spieldauer hat Vorrang).
+static const uint16_t TIMER_MIN[] = {0, 30, 45, 60, 90};
+static const char* const TIMER_NAME[] = {"Aus", "30 min", "45 min", "60 min", "90 min"};
+#define TIMER_COUNT 5
+#define SETTINGS_COUNT 7
+static const char* const SETTING_LABEL[] =
+    {"Schrift", "Bilder", "LED", "LED-Farbe", "Helligkeit", "Auto-Timer", "Aktion"};
 
 // 13x13 Stern (Favoriten-Marker), XBM LSB-first
 static const uint8_t star_bits[] = {
@@ -45,7 +70,6 @@ typedef struct {
     ViewPort* view_port;
     FuriMessageQueue* queue;
     Storage* storage;
-    NotificationApp* notifications;
 
     Screen screen;
     StrList series;
@@ -61,10 +85,19 @@ typedef struct {
     NfcListener* listener;
     bool emulating;
 
-    // Einstellungen (versteckte Setup-Seite, langes Zurueck auf der Serien-Ebene)
-    bool opt_uppercase;   // Namen in GROSSBUCHSTABEN
-    bool opt_hide_images; // Bilder ausblenden (Lesen lernen ohne Spickzettel)
-    size_t settings_idx;  // markierter Eintrag in der Setup-Seite
+    // Einstellungen (versteckte Setup-Seite, langes Zurueck auf der Serien-/Episoden-Ebene)
+    bool opt_uppercase;     // Namen in GROSSBUCHSTABEN
+    bool opt_hide_images;   // Bilder ausblenden (Lesen lernen ohne Spickzettel)
+    bool opt_led_on;        // LED-Blink waehrend Emulation
+    uint8_t opt_led_color;  // Index in LED_COLOR_*
+    uint8_t opt_led_bright; // Index in LED_BRIGHT_*
+    uint8_t opt_timer_idx;  // Index in TIMER_* (0 = Aus)
+    bool opt_timer_action;  // false = Aus (Strom sparen), true = Replay-Bounce
+    size_t settings_idx;    // markierter Eintrag in der Setup-Seite
+
+    FuriTimer* timer;    // Auto-Aus/Replay-Timer
+    bool timer_fired;    // vom Timer gesetzt, in der Hauptschleife behandelt
+    bool replay_pending; // true = 5s-Pause vor Wiederaufstellen laeuft
 
     bool running;
 } App;
@@ -265,16 +298,32 @@ static void save_favorites(App* app) {
 }
 
 // ---------- Einstellungen ----------
+// "key=" im Puffer suchen und die folgende Ganzzahl lesen (sonst Default).
+static int cfg_int(const char* buf, const char* key, int def) {
+    const char* p = strstr(buf, key);
+    if(!p) return def;
+    return atoi(p + strlen(key));
+}
 static void load_settings(App* app) {
     app->opt_uppercase = true;    // Default: GROSS (wie gewuenscht)
     app->opt_hide_images = false; // Default: Bilder an
+    app->opt_led_on = true;       // Default: LED-Blink an
+    app->opt_led_color = 0;       // Zyan
+    app->opt_led_bright = 1;      // mittel
+    app->opt_timer_idx = 0;       // Auto-Timer aus
+    app->opt_timer_action = false;// Aktion: Aus
     File* f = storage_file_alloc(app->storage);
     if(storage_file_open(f, SETTINGS_FILE, FSAM_READ, FSOM_OPEN_EXISTING)) {
-        char buf[128];
+        char buf[256];
         size_t n = storage_file_read(f, buf, sizeof(buf) - 1);
         buf[n] = 0;
-        if(strstr(buf, "uppercase=0")) app->opt_uppercase = false;
-        if(strstr(buf, "hide_images=1")) app->opt_hide_images = true;
+        app->opt_uppercase = cfg_int(buf, "uppercase=", 1) != 0;
+        app->opt_hide_images = cfg_int(buf, "hide_images=", 0) != 0;
+        app->opt_led_on = cfg_int(buf, "led_on=", 1) != 0;
+        app->opt_led_color = (uint8_t)(cfg_int(buf, "led_color=", 0) % LED_COLOR_COUNT);
+        app->opt_led_bright = (uint8_t)(cfg_int(buf, "led_bright=", 1) % LED_BRIGHT_COUNT);
+        app->opt_timer_idx = (uint8_t)(cfg_int(buf, "timer_idx=", 0) % TIMER_COUNT);
+        app->opt_timer_action = cfg_int(buf, "timer_action=", 0) != 0;
     }
     storage_file_close(f);
     storage_file_free(f);
@@ -283,10 +332,14 @@ static void save_settings(App* app) {
     storage_common_mkdir(app->storage, "/ext/apps_data/toniekids");
     File* f = storage_file_alloc(app->storage);
     if(storage_file_open(f, SETTINGS_FILE, FSAM_WRITE, FSOM_CREATE_ALWAYS)) {
-        char line[64];
+        char line[192];
         int m = snprintf(
-            line, sizeof(line), "uppercase=%d\nhide_images=%d\n", app->opt_uppercase ? 1 : 0,
-            app->opt_hide_images ? 1 : 0);
+            line, sizeof(line),
+            "uppercase=%d\nhide_images=%d\nled_on=%d\nled_color=%d\nled_bright=%d\n"
+            "timer_idx=%d\ntimer_action=%d\n",
+            app->opt_uppercase ? 1 : 0, app->opt_hide_images ? 1 : 0, app->opt_led_on ? 1 : 0,
+            app->opt_led_color, app->opt_led_bright, app->opt_timer_idx,
+            app->opt_timer_action ? 1 : 0);
         if(m > 0) storage_file_write(f, line, (size_t)m);
     }
     storage_file_close(f);
@@ -341,11 +394,87 @@ static void toggle_favorite(App* app) {
     reload_icon(app);
 }
 
+// ---------- LED ----------
+static void led_on(App* app) {
+    if(app->opt_led_on)
+        furi_hal_light_blink_start(
+            LED_COLOR_MASK[app->opt_led_color], LED_BRIGHT_VAL[app->opt_led_bright], 200, 900);
+}
+static void led_off(void) {
+    furi_hal_light_blink_stop();
+    furi_hal_light_set(LightRed | LightGreen | LightBlue, 0);
+}
+
+// ---------- Spieldauer ----------
+// Minuten fuer den aktuellen Tonie aus durations.txt (Schluessel "<Serie>/<Datei>.nfc"),
+// 0 = unbekannt.
+static uint16_t lookup_duration(App* app) {
+    if(!app->series.count || !app->episodes.count) return 0;
+    FuriString* key = furi_string_alloc();
+    furi_string_printf(
+        key, "%s/%s", app->series.items[app->series_idx], app->episodes.items[app->episode_idx]);
+    uint16_t mins = 0;
+    File* f = storage_file_alloc(app->storage);
+    if(storage_file_open(f, DURATIONS_FILE, FSAM_READ, FSOM_OPEN_EXISTING)) {
+        uint64_t sz = storage_file_size(f);
+        if(sz > 0 && sz < 60000) {
+            char* buf = malloc((size_t)sz + 1);
+            if(buf) {
+                uint16_t rd = storage_file_read(f, buf, (uint16_t)sz);
+                buf[rd] = 0;
+                const char* kc = furi_string_get_cstr(key);
+                size_t kl = strlen(kc);
+                char* line = buf;
+                while(line && *line) {
+                    char* nl = strchr(line, '\n');
+                    if(nl) *nl = 0;
+                    if(strncmp(line, kc, kl) == 0 && line[kl] == '\t') {
+                        mins = (uint16_t)atoi(line + kl + 1);
+                        break;
+                    }
+                    line = nl ? nl + 1 : NULL;
+                }
+                free(buf);
+            }
+        }
+    }
+    storage_file_close(f);
+    storage_file_free(f);
+    furi_string_free(key);
+    return mins;
+}
+// Auto-Timer scharf schalten: echte Dauer, sonst Fallback aus der Einstellung. Rueckgabe = min (0 = aus).
+static uint16_t arm_timer(App* app) {
+    if(TIMER_MIN[app->opt_timer_idx] == 0) return 0;
+    uint16_t mins = lookup_duration(app);
+    if(mins == 0) mins = TIMER_MIN[app->opt_timer_idx];
+    furi_timer_start(app->timer, (uint32_t)mins * 60u * 1000u);
+    return mins;
+}
+
 // ---------- Emulation ----------
 static NfcCommand listener_cb(NfcGenericEvent event, void* ctx) {
     UNUSED(event);
     UNUSED(ctx);
     return NfcCommandContinue;
+}
+// Listener starten (Feld an, LED an) fuer bereits geladenes dev/nfc.
+static void listener_arm(App* app) {
+    if(!app->nfc || !app->dev) return;
+    NfcProtocol proto = nfc_device_get_protocol(app->dev);
+    const NfcDeviceData* data = nfc_device_get_data(app->dev, proto);
+    app->listener = nfc_listener_alloc(app->nfc, proto, data);
+    nfc_listener_start(app->listener, listener_cb, app);
+    led_on(app);
+}
+// Listener stoppen (Feld aus, LED aus) — dev/nfc bleiben fuer Replay geladen.
+static void listener_disarm(App* app) {
+    if(app->listener) {
+        nfc_listener_stop(app->listener);
+        nfc_listener_free(app->listener);
+        app->listener = NULL;
+    }
+    led_off();
 }
 static bool emulate_start(App* app) {
     if(!app->episodes.count) return false;
@@ -365,31 +494,24 @@ static bool emulate_start(App* app) {
         return false;
     }
     NfcProtocol proto = nfc_device_get_protocol(app->dev);
-    const NfcDeviceData* data = nfc_device_get_data(app->dev, proto);
-    app->listener = nfc_listener_alloc(app->nfc, proto, data);
-    nfc_listener_start(app->listener, listener_cb, app);
+    listener_arm(app);
     app->emulating = true;
-    // LED blinkt durchgehend, solange emuliert wird (wie beim eingebauten NFC-Emulieren),
-    // damit sichtbar ist, dass die Figur aktiv gesendet wird.
-    notification_message(app->notifications, &sequence_blink_start_cyan);
+    app->replay_pending = false;
+    uint16_t tmin = arm_timer(app);
     {
-        char line[96];
+        char line[128];
         snprintf(
-            line, sizeof(line), "emulate ok proto=%s file=%s\n",
-            nfc_device_get_protocol_name(proto), app->episodes.items[app->episode_idx]);
+            line, sizeof(line), "emulate ok proto=%s file=%s timer=%umin action=%s\n",
+            nfc_device_get_protocol_name(proto), app->episodes.items[app->episode_idx],
+            (unsigned)tmin, app->opt_timer_action ? "replay" : "off");
         diag_write(app, line, false);
     }
     return true;
 }
 static void emulate_stop(App* app) {
-    if(app->emulating) {
-        notification_message(app->notifications, &sequence_blink_stop);
-    }
-    if(app->listener) {
-        nfc_listener_stop(app->listener);
-        nfc_listener_free(app->listener);
-        app->listener = NULL;
-    }
+    if(app->timer) furi_timer_stop(app->timer);
+    app->replay_pending = false;
+    listener_disarm(app);
     if(app->dev) {
         nfc_device_free(app->dev);
         app->dev = NULL;
@@ -399,6 +521,13 @@ static void emulate_stop(App* app) {
         app->nfc = NULL;
     }
     app->emulating = false;
+}
+// Timer-Callback: nur markieren + Hauptschleife wecken (Release wird sonst ignoriert).
+static void timer_cb(void* ctx) {
+    App* app = ctx;
+    app->timer_fired = true;
+    InputEvent ev = {.type = InputTypeRelease, .key = InputKeyMAX};
+    furi_message_queue_put(app->queue, &ev, 0);
 }
 
 // ---------- Zeichnen (Hochformat 64x128) ----------
@@ -447,23 +576,41 @@ static void disp_name(App* app, const char* raw, char* out, size_t out_sz) {
         out[n] = 0;
     }
 }
+// Aktuellen Wert eines Setup-Eintrags als Text.
+static void setting_value(App* app, int i, char* out, size_t n) {
+    switch(i) {
+    case 0: snprintf(out, n, "%s", app->opt_uppercase ? "GROSS" : "klein"); break;
+    case 1: snprintf(out, n, "%s", app->opt_hide_images ? "AUS" : "AN"); break;
+    case 2: snprintf(out, n, "%s", app->opt_led_on ? "AN" : "AUS"); break;
+    case 3: snprintf(out, n, "%s", LED_COLOR_NAME[app->opt_led_color]); break;
+    case 4: snprintf(out, n, "%s", LED_BRIGHT_NAME[app->opt_led_bright]); break;
+    case 5: snprintf(out, n, "%s", TIMER_NAME[app->opt_timer_idx]); break;
+    case 6: snprintf(out, n, "%s", app->opt_timer_action ? "Replay" : "Aus"); break;
+    default: out[0] = 0; break;
+    }
+}
 // Versteckte Setup-Seite (Zugang: langes Zurueck auf der Serien-/Episoden-Ebene).
+// Scrollbare Liste, 3 Eintraege sichtbar; OK aendert, Zurueck speichert.
 static void draw_settings(Canvas* canvas, App* app) {
     canvas_set_font(canvas, FontPrimary);
-    canvas_draw_str_aligned(canvas, 32, 8, AlignCenter, AlignTop, "SETUP");
-    canvas_draw_line(canvas, 0, 22, 63, 22);
+    canvas_draw_str_aligned(canvas, 32, 6, AlignCenter, AlignTop, "SETUP");
+    canvas_draw_line(canvas, 0, 18, 63, 18);
     canvas_set_font(canvas, FontSecondary);
-    // Eintrag 0: Schrift GROSS/klein
-    if(app->settings_idx == 0) canvas_draw_str(canvas, 0, 40, ">");
-    canvas_draw_str(canvas, 8, 40, "Schrift:");
-    canvas_draw_str(canvas, 8, 52, app->opt_uppercase ? "GROSS" : "klein");
-    // Eintrag 1: Bilder AN/AUS
-    if(app->settings_idx == 1) canvas_draw_str(canvas, 0, 74, ">");
-    canvas_draw_str(canvas, 8, 74, "Bilder:");
-    canvas_draw_str(canvas, 8, 86, app->opt_hide_images ? "AUS" : "AN");
-    canvas_draw_line(canvas, 0, 100, 63, 100);
-    canvas_draw_str(canvas, 1, 112, "OK: aendern");
-    canvas_draw_str(canvas, 1, 124, "Zurueck: fertig");
+    const int visible = 3;
+    int top = (int)app->settings_idx - 1;
+    if(top < 0) top = 0;
+    if(top > SETTINGS_COUNT - visible) top = SETTINGS_COUNT - visible;
+    for(int r = 0; r < visible; r++) {
+        int i = top + r;
+        int y = 30 + r * 26;
+        if(i == (int)app->settings_idx) canvas_draw_str(canvas, 0, y, ">");
+        canvas_draw_str(canvas, 8, y, SETTING_LABEL[i]);
+        char val[24];
+        setting_value(app, i, val, sizeof(val));
+        canvas_draw_str(canvas, 10, y + 12, val);
+    }
+    canvas_draw_line(canvas, 0, 114, 63, 114);
+    canvas_draw_str(canvas, 1, 125, "OK aendert");
 }
 static void draw_callback(Canvas* canvas, void* ctx) {
     App* app = ctx;
@@ -619,15 +766,23 @@ static void handle_key(App* app, InputKey key) {
         switch(key) {
         case InputKeyUp:
         case InputKeyLeft:
+            move_idx(&app->settings_idx, SETTINGS_COUNT, -1);
+            break;
         case InputKeyDown:
         case InputKeyRight:
-            app->settings_idx = app->settings_idx ? 0 : 1; // 2 Eintraege, umschalten
+            move_idx(&app->settings_idx, SETTINGS_COUNT, +1);
             break;
         case InputKeyOk:
-            if(app->settings_idx == 0)
-                app->opt_uppercase = !app->opt_uppercase;
-            else
-                app->opt_hide_images = !app->opt_hide_images;
+            switch(app->settings_idx) {
+            case 0: app->opt_uppercase = !app->opt_uppercase; break;
+            case 1: app->opt_hide_images = !app->opt_hide_images; break;
+            case 2: app->opt_led_on = !app->opt_led_on; break;
+            case 3: app->opt_led_color = (app->opt_led_color + 1) % LED_COLOR_COUNT; break;
+            case 4: app->opt_led_bright = (app->opt_led_bright + 1) % LED_BRIGHT_COUNT; break;
+            case 5: app->opt_timer_idx = (app->opt_timer_idx + 1) % TIMER_COUNT; break;
+            case 6: app->opt_timer_action = !app->opt_timer_action; break;
+            default: break;
+            }
             save_settings(app);
             break;
         case InputKeyBack:
@@ -649,7 +804,7 @@ static App* app_alloc(void) {
     app->queue = furi_message_queue_alloc(8, sizeof(InputEvent));
     app->storage = furi_record_open(RECORD_STORAGE);
     app->gui = furi_record_open(RECORD_GUI);
-    app->notifications = furi_record_open(RECORD_NOTIFICATION);
+    app->timer = furi_timer_alloc(timer_cb, FuriTimerTypeOnce, app);
     app->view_port = view_port_alloc();
     view_port_set_orientation(app->view_port, ViewPortOrientationVertical);
     strlist_init(&app->series);
@@ -664,6 +819,7 @@ static App* app_alloc(void) {
 }
 static void app_free(App* app) {
     emulate_stop(app);
+    if(app->timer) furi_timer_free(app->timer);
     gui_remove_view_port(app->gui, app->view_port);
     view_port_free(app->view_port);
     strlist_clear(&app->series);
@@ -671,7 +827,6 @@ static void app_free(App* app) {
     strlist_clear(&app->favorites);
     furi_record_close(RECORD_GUI);
     furi_record_close(RECORD_STORAGE);
-    furi_record_close(RECORD_NOTIFICATION);
     furi_message_queue_free(app->queue);
     furi_mutex_free(app->mutex);
     free(app);
@@ -688,10 +843,10 @@ int32_t toniekids_app(void* p) {
         char line[128];
         snprintf(
             line, sizeof(line),
-            "start series=%u fav=%u icon_c=%d up=%d img=%d orient=vertical first=%s\n",
+            "start series=%u fav=%u icon_c=%d up=%d img=%d led=%d timer=%s orient=vertical first=%s\n",
             (unsigned)app->series.count, (unsigned)app->favorites.count, app->ic.valid ? 1 : 0,
-            app->opt_uppercase ? 1 : 0, app->opt_hide_images ? 1 : 0,
-            app->series.count ? app->series.items[0] : "-");
+            app->opt_uppercase ? 1 : 0, app->opt_hide_images ? 1 : 0, app->opt_led_on ? 1 : 0,
+            TIMER_NAME[app->opt_timer_idx], app->series.count ? app->series.items[0] : "-");
         diag_write(app, line, true);
     }
     view_port_update(app->view_port);
@@ -699,6 +854,28 @@ int32_t toniekids_app(void* p) {
     InputEvent event;
     while(app->running) {
         if(furi_message_queue_get(app->queue, &event, FuriWaitForever) == FuriStatusOk) {
+            if(app->timer_fired) {
+                // Auto-Timer abgelaufen: je nach Aktion beenden oder Replay-Bounce.
+                furi_mutex_acquire(app->mutex, FuriWaitForever);
+                app->timer_fired = false;
+                if(app->screen == ScreenPlay) {
+                    if(app->replay_pending) {
+                        app->replay_pending = false; // 5s vorbei -> wieder aufstellen
+                        listener_arm(app);
+                        arm_timer(app);
+                    } else if(app->opt_timer_action) {
+                        listener_disarm(app); // Replay: kurz weg (Feld aus), 5s Pause
+                        app->replay_pending = true;
+                        furi_timer_start(app->timer, 5000);
+                    } else {
+                        emulate_stop(app); // Aus: Emulation beenden (Strom sparen)
+                        app->screen = ScreenEpisode;
+                        reload_icon(app);
+                    }
+                }
+                furi_mutex_release(app->mutex);
+                view_port_update(app->view_port);
+            }
             bool nav = (event.key == InputKeyUp || event.key == InputKeyDown ||
                         event.key == InputKeyLeft || event.key == InputKeyRight);
             if(event.type == InputTypeShort || (event.type == InputTypeRepeat && nav)) {

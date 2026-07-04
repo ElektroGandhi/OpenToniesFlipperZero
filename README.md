@@ -129,14 +129,24 @@ zwei Sekunden erreichbar:
 |---|---|---|
 | **Schrift** | `GROSS` / `klein` | Namen komplett in Großbuchstaben oder normal. |
 | **Bilder** | `AN` / `AUS` | `AUS` = **Lese-Modus**: nur der Titel (groß), damit das Kind *liest* statt am Bild abzulesen. |
+| **LED** | `AN` / `AUS` | LED-Blink während der Emulation. |
+| **LED-Farbe** | Zyan/Blau/Grün/Rot/Magenta/Gelb/Weiß | Farbe des Blinkens. |
+| **Helligkeit** | niedrig / mittel / hoch | Helligkeit der LED. |
+| **Auto-Timer** | Aus / 30 / 45 / 60 / 90 min | Beendet die Emulation nach Ablauf (Strom sparen). Nutzt die **echte Spieldauer** des Tonies, falls bekannt — sonst den eingestellten Wert als Fallback. |
+| **Aktion** | `Aus` / `Replay` | Nach der Timer-Zeit: **Aus** = Emulation stoppen · **Replay** = kurz aus (5 s) & wieder an, um „neu aufstellen" zu simulieren (experimentell). |
 
-Die Einstellungen bleiben gespeichert (`SD:/apps_data/toniekids/settings.txt`,
-Schlüssel `uppercase=` / `hide_images=`) und überleben Neustarts. Standard: Schrift **GROSS**,
-Bilder **an**.
+Gespeichert in `SD:/apps_data/toniekids/settings.txt`; überlebt Neustarts. Standard:
+Schrift **GROSS**, Bilder **an**, LED **an** (zyan/mittel), Auto-Timer **aus**.
+
+**Echte Spieldauern:** Der Auto-Timer nutzt die Tabelle `SD:/apps_data/toniekids/durations.txt`
+(Zeilen `<Serie>/<Datei>.nfc  <Minuten>`), erzeugt mit **`tools/gen_durations.py`** (holt die
+Spieldauer je Tonie von tonies.com). Aktuell ~52 % der Sammlung abgedeckt — für den Rest
+greift der Fallback-Wert. Jederzeit regenerier-/erweiterbar.
 
 ## Roadmap
 
-- ⚙️ Mehr Setup-Optionen (LED-Farbe/aus, Bild-Sprache **DE/EN/FR**, Emulations-Timeout).
+- 🌐 Höhere Abdeckung der Spieldauer-Tabelle (bessere Titel→tonies.com-Zuordnung).
+- 🈳 Bild-Sprache umschaltbar (**DE / EN / FR**).
 - 🤖 **Android-Companion-App** — die Sammlung bequem vom Handy pflegen:
   - Figuren-Dumps & Bilder per **USB-OTG** auf den Flipper übertragen,
   - **Icon-Pipeline am Telefon** (Zuschnitt/Kontur/Dithering) statt am PC,

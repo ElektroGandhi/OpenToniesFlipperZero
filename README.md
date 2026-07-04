@@ -138,10 +138,25 @@ zwei Sekunden erreichbar:
 Gespeichert in `SD:/apps_data/toniekids/settings.txt`; überlebt Neustarts. Standard:
 Schrift **GROSS**, Bilder **an**, LED **an** (zyan/mittel), Auto-Timer **aus**.
 
-**Echte Spieldauern:** Der Auto-Timer nutzt die Tabelle `SD:/apps_data/toniekids/durations.txt`
-(Zeilen `<Serie>/<Datei>.nfc  <Minuten>`), erzeugt mit **`tools/gen_durations.py`** (holt die
-Spieldauer je Tonie von tonies.com). Aktuell ~52 % der Sammlung abgedeckt — für den Rest
-greift der Fallback-Wert. Jederzeit regenerier-/erweiterbar.
+**Echte Spieldauern:** Der Auto-Timer nutzt die Tabelle `tools/durations.txt`
+(Zeilen `<Serie>/<Datei>.nfc` + Tab + `<Minuten>`), erzeugt mit **`tools/gen_durations.py`**
+(holt die Spieldauer je Tonie von tonies.com). Zur Nutzung nach
+`SD:/apps_data/toniekids/durations.txt` kopieren. Aktuell ~52 % der (Standard-)Sammlung
+abgedeckt — für den Rest greift der Fallback-Wert.
+
+### 🙌 Mithelfen: die Spieldauer-Bibliothek erweitern
+
+Die Tabelle deckt erst **~52 %** ab — **Beiträge sind willkommen!** So geht's:
+
+1. Das Repo **forken** (oben rechts auf GitHub).
+2. In `tools/durations.txt` Zeilen ergänzen oder korrigieren — je Zeile
+   `<Serie>/<Datei>.nfc` + **Tab** + `<Minuten>`. (Oder `tools/gen_durations.py`
+   verbessern und neu laufen lassen.)
+3. Einen **Pull Request** öffnen.
+
+> Direktes Pushen ist gesperrt — Beiträge laufen ausschließlich über **Fork + Pull Request**,
+> und nur der Maintainer merged. So kann jede*r Spieldauern beisteuern, ohne am Code etwas
+> ändern zu können.
 
 ## Roadmap
 

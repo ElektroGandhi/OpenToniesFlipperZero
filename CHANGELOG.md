@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.0-beta.3 — Hotfix (2026-07-04)
+
+### Fixes
+- **Favoriten-Stern** sitzt jetzt als Badge **im Bild** (oben links) statt über dem Namen —
+  der Name bleibt dadurch voll lesbar (Laufschrift & Zeilen nicht mehr verdeckt).
+
 ## v1.0.0-beta.2 — Hotfix (2026-07-04)
 
 ### Fixes

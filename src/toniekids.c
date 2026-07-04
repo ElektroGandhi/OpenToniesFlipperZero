@@ -692,8 +692,8 @@ static void draw_callback(Canvas* canvas, void* ctx) {
             if(app->opt_scroll)
                 draw_marquee(canvas, 1, 116, 62, nm, app->scroll_off);
             else
-                draw_wrapped_ex(canvas, fav ? 16 : 1, 108, fav ? 46 : 62, nm, 2, 10, 5);
-            if(fav) draw_star(canvas, 1, 100);
+                draw_wrapped_ex(canvas, 1, 108, 62, nm, 2, 10, 5);
+            if(fav) draw_star(canvas, 1, 1); // Badge ins Bild (oben links), nicht in den Text
         }
         canvas_set_font(canvas, FontSecondary);
         char cnt[16];

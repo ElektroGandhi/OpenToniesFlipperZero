@@ -18,13 +18,14 @@
 #define ICON_H    96
 #define ICON_MAX_BYTES ((ICON_W / 8) * ICON_H) // 768
 #define FAV_FILE "/ext/apps_data/toniekids/favorites.txt"
+#define SETTINGS_FILE "/ext/apps_data/toniekids/settings.txt"
 
 // 13x13 Stern (Favoriten-Marker), XBM LSB-first
 static const uint8_t star_bits[] = {
     0x40, 0x00, 0x60, 0x00, 0xe0, 0x00, 0xf0, 0x00, 0xff, 0x0f, 0xfc, 0x03, 0xf8,
     0x01, 0xf8, 0x01, 0xf8, 0x01, 0xbc, 0x03, 0x0c, 0x03, 0x04, 0x02, 0x00, 0x00};
 
-typedef enum { ScreenSeries, ScreenEpisode, ScreenPlay } Screen;
+typedef enum { ScreenSeries, ScreenEpisode, ScreenPlay, ScreenSettings } Screen;
 
 typedef struct {
     char** items;
@@ -59,6 +60,11 @@ typedef struct {
     NfcDevice* dev;
     NfcListener* listener;
     bool emulating;
+
+    // Einstellungen (versteckte Setup-Seite, langes Zurueck auf der Serien-Ebene)
+    bool opt_uppercase;   // Namen in GROSSBUCHSTABEN
+    bool opt_hide_images; // Bilder ausblenden (Lesen lernen ohne Spickzettel)
+    size_t settings_idx;  // markierter Eintrag in der Setup-Seite
 
     bool running;
 } App;
@@ -107,6 +113,40 @@ static void strip_nfc(const char* in, char* out, size_t out_sz) {
     if(n > out_sz - 1) n = out_sz - 1;
     memcpy(out, in, n);
     out[n] = 0;
+}
+// Serien-Praefix aus dem Episodentitel entfernen: Ebene 2 zeigt nur die Episode.
+// Greift nur, wenn der Titel exakt mit dem Serien-Namen beginnt (z. B.
+// "Bibi Blocksberg - Englisch lernen" -> "Englisch lernen").
+static const char* strip_series_prefix(const char* title, const char* series) {
+    size_t sl = strlen(series);
+    if(sl > 0 && strncmp(title, series, sl) == 0) {
+        const char* p = title + sl;
+        while(*p == ' ' || *p == '-' || *p == '_' || *p == ':' || *p == '.') p++;
+        if(*p) return p; // nur wenn danach noch Text folgt
+    }
+    return title;
+}
+// UTF-8-bewusstes Grossschreiben: ASCII a-z + Latin-1-Kleinbuchstaben
+// (C3 A0..BE -> C3 80..9E, deckt aeoeue etc. ab). Byte-laengenerhaltend; ss bleibt.
+static void to_upper(const char* in, char* out, size_t out_sz) {
+    size_t o = 0;
+    for(size_t i = 0; in[i] && o + 1 < out_sz;) {
+        unsigned char c = (unsigned char)in[i];
+        unsigned char d = (unsigned char)in[i + 1];
+        if(c >= 'a' && c <= 'z') {
+            out[o++] = (char)(c - 32);
+            i++;
+        } else if(c == 0xC3 && d >= 0xA0 && d <= 0xBE && d != 0xB7) {
+            if(o + 2 >= out_sz) break;
+            out[o++] = (char)0xC3;
+            out[o++] = (char)(d - 0x20);
+            i += 2;
+        } else {
+            out[o++] = (char)c;
+            i++;
+        }
+    }
+    out[o] = 0;
 }
 
 // ---------- Diagnose ----------
@@ -223,6 +263,35 @@ static void save_favorites(App* app) {
     storage_file_close(f);
     storage_file_free(f);
 }
+
+// ---------- Einstellungen ----------
+static void load_settings(App* app) {
+    app->opt_uppercase = true;    // Default: GROSS (wie gewuenscht)
+    app->opt_hide_images = false; // Default: Bilder an
+    File* f = storage_file_alloc(app->storage);
+    if(storage_file_open(f, SETTINGS_FILE, FSAM_READ, FSOM_OPEN_EXISTING)) {
+        char buf[128];
+        size_t n = storage_file_read(f, buf, sizeof(buf) - 1);
+        buf[n] = 0;
+        if(strstr(buf, "uppercase=0")) app->opt_uppercase = false;
+        if(strstr(buf, "hide_images=1")) app->opt_hide_images = true;
+    }
+    storage_file_close(f);
+    storage_file_free(f);
+}
+static void save_settings(App* app) {
+    storage_common_mkdir(app->storage, "/ext/apps_data/toniekids");
+    File* f = storage_file_alloc(app->storage);
+    if(storage_file_open(f, SETTINGS_FILE, FSAM_WRITE, FSOM_CREATE_ALWAYS)) {
+        char line[64];
+        int m = snprintf(
+            line, sizeof(line), "uppercase=%d\nhide_images=%d\n", app->opt_uppercase ? 1 : 0,
+            app->opt_hide_images ? 1 : 0);
+        if(m > 0) storage_file_write(f, line, (size_t)m);
+    }
+    storage_file_close(f);
+    storage_file_free(f);
+}
 // Serienliste bauen: Favoriten zuerst (in Favoriten-Reihenfolge), dann Rest alphabetisch
 static void build_series_ordered(App* app) {
     StrList all;
@@ -333,9 +402,9 @@ static void emulate_stop(App* app) {
 }
 
 // ---------- Zeichnen (Hochformat 64x128) ----------
-static void draw_wrapped(Canvas* c, int x, int y, int w, const char* s, int max_lines) {
-    const int char_w = 5;
-    int max_chars = w / char_w;
+static void draw_wrapped_ex(
+    Canvas* c, int x, int y, int w, const char* s, int max_lines, int line_h, int char_w) {
+    int max_chars = char_w > 0 ? w / char_w : 12;
     if(max_chars < 1) max_chars = 1;
     if(max_chars > 24) max_chars = 24;
     const char* p = s;
@@ -352,7 +421,7 @@ static void draw_wrapped(Canvas* c, int x, int y, int w, const char* s, int max_
         if(take > 25) take = 25;
         memcpy(line, p, take);
         line[take] = 0;
-        canvas_draw_str(c, x, y + line_no * 10, line);
+        canvas_draw_str(c, x, y + line_no * line_h, line);
         p += take;
         while(*p == ' ') p++;
         line_no++;
@@ -367,15 +436,50 @@ static void draw_image(App* app, Canvas* canvas) {
         canvas_draw_str_aligned(canvas, 32, 48, AlignCenter, AlignCenter, "?");
     }
 }
+// Namen gemaess Einstellung aufbereiten (GROSS oder unveraendert).
+static void disp_name(App* app, const char* raw, char* out, size_t out_sz) {
+    if(app->opt_uppercase) {
+        to_upper(raw, out, out_sz);
+    } else {
+        size_t n = strlen(raw);
+        if(n > out_sz - 1) n = out_sz - 1;
+        memcpy(out, raw, n);
+        out[n] = 0;
+    }
+}
+// Versteckte Setup-Seite (Zugang: langes Zurueck auf der Serien-/Episoden-Ebene).
+static void draw_settings(Canvas* canvas, App* app) {
+    canvas_set_font(canvas, FontPrimary);
+    canvas_draw_str_aligned(canvas, 32, 8, AlignCenter, AlignTop, "SETUP");
+    canvas_draw_line(canvas, 0, 22, 63, 22);
+    canvas_set_font(canvas, FontSecondary);
+    // Eintrag 0: Schrift GROSS/klein
+    if(app->settings_idx == 0) canvas_draw_str(canvas, 0, 40, ">");
+    canvas_draw_str(canvas, 8, 40, "Schrift:");
+    canvas_draw_str(canvas, 8, 52, app->opt_uppercase ? "GROSS" : "klein");
+    // Eintrag 1: Bilder AN/AUS
+    if(app->settings_idx == 1) canvas_draw_str(canvas, 0, 74, ">");
+    canvas_draw_str(canvas, 8, 74, "Bilder:");
+    canvas_draw_str(canvas, 8, 86, app->opt_hide_images ? "AUS" : "AN");
+    canvas_draw_line(canvas, 0, 100, 63, 100);
+    canvas_draw_str(canvas, 1, 112, "OK: aendern");
+    canvas_draw_str(canvas, 1, 124, "Zurueck: fertig");
+}
 static void draw_callback(Canvas* canvas, void* ctx) {
     App* app = ctx;
     furi_mutex_acquire(app->mutex, FuriWaitForever);
     canvas_clear(canvas);
 
+    if(app->screen == ScreenSettings) {
+        draw_settings(canvas, app);
+        furi_mutex_release(app->mutex);
+        return;
+    }
+
     if(app->series.count == 0) {
         canvas_set_font(canvas, FontPrimary);
-        canvas_draw_str_aligned(canvas, 32, 50, AlignCenter, AlignCenter, "Keine");
-        canvas_draw_str_aligned(canvas, 32, 66, AlignCenter, AlignCenter, "Tonies");
+        canvas_draw_str_aligned(canvas, 32, 50, AlignCenter, AlignCenter, "KEINE");
+        canvas_draw_str_aligned(canvas, 32, 66, AlignCenter, AlignCenter, "TONIES");
         furi_mutex_release(app->mutex);
         return;
     }
@@ -383,38 +487,57 @@ static void draw_callback(Canvas* canvas, void* ctx) {
     if(app->screen == ScreenSeries) {
         const char* sname = app->series.items[app->series_idx];
         bool fav = is_favorite(app, sname);
-        draw_image(app, canvas);
-        canvas_draw_line(canvas, 0, 98, 63, 98);
-        if(fav) canvas_draw_xbm(canvas, 1, 100, 13, 13, star_bits);
+        char nm[80];
+        disp_name(app, sname, nm, sizeof(nm));
+        if(app->opt_hide_images) {
+            if(fav) canvas_draw_xbm(canvas, 1, 1, 13, 13, star_bits);
+            canvas_set_font(canvas, FontPrimary);
+            draw_wrapped_ex(canvas, 2, 26, 60, nm, 5, 13, 7);
+        } else {
+            draw_image(app, canvas);
+            canvas_draw_line(canvas, 0, 98, 63, 98);
+            if(fav) canvas_draw_xbm(canvas, 1, 100, 13, 13, star_bits);
+            canvas_set_font(canvas, FontSecondary);
+            draw_wrapped_ex(canvas, fav ? 16 : 1, 108, fav ? 46 : 62, nm, 2, 10, 5);
+        }
         canvas_set_font(canvas, FontSecondary);
-        draw_wrapped(canvas, fav ? 16 : 1, 108, fav ? 46 : 62, sname, 2);
         char cnt[16];
         snprintf(cnt, sizeof(cnt), "%u/%u", (unsigned)(app->series_idx + 1), (unsigned)app->series.count);
         canvas_draw_str_aligned(canvas, 63, 127, AlignRight, AlignBottom, cnt);
         canvas_draw_str(canvas, 1, 127, "OK");
     } else if(app->screen == ScreenEpisode) {
-        draw_image(app, canvas);
-        canvas_draw_line(canvas, 0, 98, 63, 98);
-        canvas_set_font(canvas, FontSecondary);
         if(app->episodes.count) {
-            char nm[64];
-            strip_nfc(app->episodes.items[app->episode_idx], nm, sizeof(nm));
-            draw_wrapped(canvas, 1, 108, 62, nm, 2);
+            char base[80];
+            strip_nfc(app->episodes.items[app->episode_idx], base, sizeof(base));
+            const char* ep = strip_series_prefix(base, app->series.items[app->series_idx]);
+            char nm[80];
+            disp_name(app, ep, nm, sizeof(nm));
+            if(app->opt_hide_images) {
+                canvas_set_font(canvas, FontPrimary);
+                draw_wrapped_ex(canvas, 2, 26, 60, nm, 5, 13, 7);
+            } else {
+                draw_image(app, canvas);
+                canvas_draw_line(canvas, 0, 98, 63, 98);
+                canvas_set_font(canvas, FontSecondary);
+                draw_wrapped_ex(canvas, 1, 108, 62, nm, 2, 10, 5);
+            }
+            canvas_set_font(canvas, FontSecondary);
             char cnt[16];
             snprintf(
                 cnt, sizeof(cnt), "%u/%u", (unsigned)(app->episode_idx + 1),
                 (unsigned)app->episodes.count);
             canvas_draw_str_aligned(canvas, 63, 127, AlignRight, AlignBottom, cnt);
-            canvas_draw_str(canvas, 1, 127, "OK=Play");
+            canvas_draw_str(canvas, 1, 127, "OK=PLAY");
         } else {
-            canvas_draw_str(canvas, 2, 112, "Keine Geschichten");
+            canvas_set_font(canvas, FontSecondary);
+            canvas_draw_str(canvas, 2, 112, "KEINE GESCHICHTEN");
         }
     } else { // ScreenPlay
-        draw_image(app, canvas);
+        if(!app->opt_hide_images) draw_image(app, canvas);
         canvas_set_font(canvas, FontPrimary);
-        canvas_draw_str_aligned(canvas, 32, 112, AlignCenter, AlignBottom, "Spielt!");
+        canvas_draw_str_aligned(canvas, 32, 112, AlignCenter, AlignBottom, "SPIELT!");
         canvas_set_font(canvas, FontSecondary);
-        canvas_draw_str_aligned(canvas, 32, 126, AlignCenter, AlignBottom, "Zurueck = Stop");
+        canvas_draw_str_aligned(canvas, 32, 126, AlignCenter, AlignBottom, "ZURUECK = STOP");
     }
     furi_mutex_release(app->mutex);
 }
@@ -486,11 +609,34 @@ static void handle_key(App* app, InputKey key) {
         default:
             break;
         }
-    } else { // ScreenPlay
+    } else if(app->screen == ScreenPlay) {
         if(key == InputKeyBack || key == InputKeyOk) {
             emulate_stop(app);
             app->screen = ScreenEpisode;
             reload_icon(app);
+        }
+    } else if(app->screen == ScreenSettings) {
+        switch(key) {
+        case InputKeyUp:
+        case InputKeyLeft:
+        case InputKeyDown:
+        case InputKeyRight:
+            app->settings_idx = app->settings_idx ? 0 : 1; // 2 Eintraege, umschalten
+            break;
+        case InputKeyOk:
+            if(app->settings_idx == 0)
+                app->opt_uppercase = !app->opt_uppercase;
+            else
+                app->opt_hide_images = !app->opt_hide_images;
+            save_settings(app);
+            break;
+        case InputKeyBack:
+            save_settings(app);
+            app->screen = ScreenSeries;
+            reload_icon(app);
+            break;
+        default:
+            break;
         }
     }
 }
@@ -535,13 +681,16 @@ int32_t toniekids_app(void* p) {
     UNUSED(p);
     App* app = app_alloc();
     load_favorites(app);
+    load_settings(app);
     build_series_ordered(app);
     reload_icon(app);
     {
         char line[128];
         snprintf(
-            line, sizeof(line), "start series=%u fav=%u icon_c=%d orient=vertical first=%s\n",
+            line, sizeof(line),
+            "start series=%u fav=%u icon_c=%d up=%d img=%d orient=vertical first=%s\n",
             (unsigned)app->series.count, (unsigned)app->favorites.count, app->ic.valid ? 1 : 0,
+            app->opt_uppercase ? 1 : 0, app->opt_hide_images ? 1 : 0,
             app->series.count ? app->series.items[0] : "-");
         diag_write(app, line, true);
     }
@@ -561,6 +710,15 @@ int32_t toniekids_app(void* p) {
                 // Langes OK: Serie als Favorit markieren/entfernen
                 furi_mutex_acquire(app->mutex, FuriWaitForever);
                 if(app->screen == ScreenSeries) toggle_favorite(app);
+                furi_mutex_release(app->mutex);
+                view_port_update(app->view_port);
+            } else if(event.type == InputTypeLong && event.key == InputKeyBack) {
+                // Verstecktes Setup: langes Zurueck (nicht offensichtlich fuer Kinder)
+                furi_mutex_acquire(app->mutex, FuriWaitForever);
+                if(app->screen == ScreenSeries || app->screen == ScreenEpisode) {
+                    app->settings_idx = 0;
+                    app->screen = ScreenSettings;
+                }
                 furi_mutex_release(app->mutex);
                 view_port_update(app->view_port);
             }

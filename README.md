@@ -49,6 +49,9 @@ auch ein Vierjähriger bedienen kann.
   (`NfcProtocolSlix`, `SlixTypeSlixL`).
 - 💡 **LED-Blink** (zyan) während der Emulation als sichtbares „läuft"-Signal.
 - 🖼️ **Kontur-Icons**: auch helle Figuren (König der Löwen, Elsa) bleiben klar erkennbar.
+- 🔠 **Nur der Episodentitel** in Ebene 2 — der Serienname wird nicht wiederholt.
+- ⚙️ **Verstecktes Setup** (langes Zurück, für Kinder nicht offensichtlich): Schrift
+  **GROSS/klein** und ein **Lese-Modus ohne Bilder** (siehe unten).
 - 🔌 **Datengetrieben**: keine fest eingebaute Figurenliste — alles wird zur Laufzeit von
   der SD gelesen. Neue Tonies erscheinen automatisch.
 
@@ -59,6 +62,7 @@ auch ein Vierjähriger bedienen kann.
 | **← → / ↑ ↓** | vorige / nächste Serie bzw. Geschichte (alle Richtungen; **halten = schnell blättern**) |
 | **OK** | Serie öffnen · Geschichte **abspielen** → Flipper auf die Box legen |
 | **OK lang** (Serien-Ansicht) | Serie als **Favorit** ⭐ markieren / entfernen |
+| **Zurück lang** (Serien-/Episoden-Ebene) | verstecktes **Setup** öffnen (nicht offensichtlich für Kinder) |
 | **Zurück** | Emulation stoppen / eine Ebene zurück / App verlassen |
 
 ## Installation
@@ -108,21 +112,24 @@ python3 ~/.ufbt/current/scripts/storage.py -p /dev/ttyACM0 \
 `gen4.py` schneidet aufs Motiv zu, trennt es vom weißen Hintergrund, zieht eine **1-px-Kontur**
 auf der Silhouette und dithert (Atkinson) — so bleiben auch helle Figuren erkennbar.
 
-## Roadmap — geplante Features
+## Einstellungen & Roadmap
 
-Diese Features sind **angekündigt** und in Planung:
+**Schon da — verstecktes Setup** (Zugang: **langes Zurück** auf der Serien-/Episoden-Ebene,
+für Kinder nicht offensichtlich; im Setup: **OK** ändert, **Zurück** speichert):
 
-- ⚙️ **Settings-Menü (in der App)** — konfigurierbar direkt am Flipper:
-  - LED-Farbe wählen oder Blink ganz aus,
-  - Bild-Sprache umschalten (**DE / EN / FR**),
-  - Emulations-Timeout & Display-Helligkeit,
-  - Favoriten verwalten und Standard-Startserie,
-  - optional „Zuletzt gespielt".
+- **Schrift**: GROSSBUCHSTABEN oder normal.
+- **Bilder**: an — oder **Lese-Modus ohne Bilder**, damit das Kind den Titel wirklich
+  *liest* statt am Bild abzulesen (Lesenlernen).
+
+Gespeichert in `SD:/apps_data/toniekids/settings.txt` (`uppercase=`, `hide_images=`).
+
+**Geplant:**
+
+- ⚙️ Mehr Setup-Optionen (LED-Farbe/aus, Bild-Sprache **DE/EN/FR**, Emulations-Timeout).
 - 🤖 **Android-Companion-App** — die Sammlung bequem vom Handy pflegen:
   - Figuren-Dumps & Bilder per **USB-OTG** auf den Flipper übertragen,
   - **Icon-Pipeline am Telefon** (Zuschnitt/Kontur/Dithering) statt am PC,
-  - Favoriten & Reihenfolge synchronisieren,
-  - **Backup/Restore** der kompletten SD-Struktur,
+  - Favoriten & Reihenfolge synchronisieren, **Backup/Restore** der SD-Struktur,
   - Bibliotheks-Browser mit Suche.
 
 > Ideen, Wünsche oder Pull Requests dazu sind willkommen — Issues gern aufmachen.

@@ -140,13 +140,14 @@ Schrift **GROSS**, Bilder **an**, LED **an** (zyan/mittel), Auto-Timer **aus**.
 
 **Echte Spieldauern:** Der Auto-Timer nutzt die Tabelle `tools/durations.txt`
 (Zeilen `<Serie>/<Datei>.nfc` + Tab + `<Minuten>`), erzeugt mit **`tools/gen_durations.py`**
-(holt die Spieldauer je Tonie von tonies.com). Zur Nutzung nach
-`SD:/apps_data/toniekids/durations.txt` kopieren. Aktuell ~52 % der (Standard-)Sammlung
-abgedeckt — für den Rest greift der Fallback-Wert.
+(gleicht die Sammlung über die tonies.com-**Sitemap** gegen die echten Produkt-URLs ab und
+liest die Spieldauer). Zur Nutzung nach `SD:/apps_data/toniekids/durations.txt` kopieren.
+Aktuell **~58 %** der (Standard-)Sammlung abgedeckt — der Rest steht meist gar nicht (mehr)
+auf tonies.com; dafür greift der Fallback-Wert.
 
 ### 🙌 Mithelfen: die Spieldauer-Bibliothek erweitern
 
-Die Tabelle deckt erst **~52 %** ab — **Beiträge sind willkommen!** So geht's:
+Die Tabelle deckt erst **~58 %** ab — **Beiträge sind willkommen!** So geht's:
 
 1. Das Repo **forken** (oben rechts auf GitHub).
 2. In `tools/durations.txt` Zeilen ergänzen oder korrigieren — je Zeile

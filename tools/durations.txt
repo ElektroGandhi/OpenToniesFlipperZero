@@ -1,70 +1,77 @@
 100% Wolf/100% Wolf.nfc	81
-Affenzahn/Die Abenteuer von Affenzahn.nfc	55
+Adventskalender/Adventskalender 2023 - Wuensch dir was kleines Rentier.nfc	200
+Adventskalender/Adventskalender 2024 - Ein Fest fuer die Waldfreunde.nfc	125
+Adventskalender/Adventskalender 2025 - Floeckchen und die verschwundenen Weihnachtslichter.nfc	120
 Alea Aquarius/Die Magie der Nixen.nfc	40
-Als Ela das All eroberte/Als Ela das All eroberte.nfc	97
 Anne Kaffeekanne/12 Lieder zum Singen, Spielen und Tanzen.nfc	40
 Asterix/Asterix der Gallier.nfc	43
-Asterix/Die Odyssee.nfc	54
 Asterix/Die goldene Sichel.nfc	37
-Astrid Lindgren/Kalle Blomquist - Meisterdetektiv.nfc	240
 Bakabu/Beste Freunde.nfc	37
 Beethoven fuer Kids/Beethoven fuer Kids - Gelesen von Daniel Hope.nfc	80
 Benjamin Bluemchen/Benjamin Bluemchen als Ritter.nfc	42
+Benjamin Bluemchen/Benjamin als Baggerfahrer.nfc	41
 Benjamin Bluemchen/Benjamin als Weihnachtsmann.nfc	38
 Benjamin Bluemchen/Der Zoo Kindergarten.nfc	43
+Benjamin Bluemchen/Die Maerchennacht im Zoo.nfc	44
+Benjamin Bluemchen/Ein Toeroeoeoe fuer alle Faelle.nfc	61
 Benjamin Bluemchen/Gute-Nacht-Geschichten - Pluesch.nfc	46
 Bewegungsgeschichten mit Affe Marty/Bewegungsgeschichten mit Affe Marty - Mit lustigen Uebungen zum Mitspielen.nfc	60
-BiBiBiber hat da mal ne Frage/Warum leuchten Sterne.nfc	86
-Bibi & Tina/Das Waisenfohlen.nfc	70
-Bibi & Tina/Der verschwundene Pokal.nfc	37
-Bibi & Tina/Die Waschbaeren sind los.nfc	40
-Bibi & Tina/Die Wildpferde - Teil 1.nfc	44
 Bibi Blocksberg/Ausgehext!.nfc	45
-Bibi Blocksberg/Die Junghexenbande.nfc	41
+Bibi Blocksberg/Die Junghexenbande.nfc	40
 Bibi Blocksberg/Die Prinzessinnen von Thunderstorm.nfc	42
 Bibi Blocksberg/Die grosse Hexenparty.nfc	77
 Bibi Blocksberg/Hexen gibt es doch.nfc	33
 Bibi Blocksberg/Hexenbesengeschichten - Pluesch.nfc	49
+Bibi Blocksberg/Mami spielt verrueckt.nfc	46
 Billie, der Regenbogentiger/Billie, der Regenbogentiger.nfc	59
 Bitte nicht oeffnen/Bissig!.nfc	153
 Bob der Baumeister/Bob der Kuechenmeister.nfc	53
+Bobo Siebenschlaefer/Bobo beim Kinderarzt.nfc	46
 Bobo Siebenschlaefer/Bobo feiert Kindergeburtstag.nfc	39
 Bobo Siebenschlaefer/Bobos Ausflug zum Spielplatz.nfc	40
-Book Tonies/Der zauberhafte Wunschbuchladen/Der zauberhafte Wunschbuchladen.nfc	175
-Book Tonies/Ein Maedchen namens Willow/Ein Maedchen namens Willow.nfc	215
-Book Tonies/Kannawoniwasein/Kannawoniwasein.nfc	139
-Book Tonies/Moby Dick/Moby Dick.nfc	180
-Book Tonies/Zippel, das wirklich wahre Schlossgespenst/Zippel, das wirklich wahre Schlossgespenst.nfc	143
 Bummelkasten/Irgendwas Bestimmtes.nfc	49
-Checker Tobi/Checker Tobi 3 Das Extra zum Kinofilm.nfc	45
-Clever Tonies/Wundervolle Welt der Dinosaurier und der Urzeit.nfc	78
+Cocomelon/Mit JJ durch den Tag.nfc	45
 Cocomelon/Raus in die Welt mit JJ.nfc	44
 Cocomelon/Spiel und Spass mit JJ.nfc	43
 Conni/Conni auf dem Bauernhof - Conni und das neue Baby.nfc	43
 Conni/Conni backt Pizza - Conni lernt Rad fahren.nfc	40
-DC/Batman.nfc	60
+Conni/Conni kommt in den Kindergarten & Conni geht aufs Toepfchen.nfc	38
+Das NEINhorn/Das NEINhorn und die SchLANGEWEILE.nfc	45
 Das Sams/Eine Woche voller Samstage.nfc	95
+Das kleine Gespenst/Das kleine Gespenst.nfc	116
+Das kleine Hoerbuch vom grossen Glueck/Das kleine Hoerbuch vom grossen Glueck - Die Gluecksfee.nfc	46
+Das kleine boese Buch/Das kleine boese Buch.nfc	87
 Das magische Baumhaus/Im Tal der Dinosaurier.nfc	35
 Der Grolltroll/Der Grolltroll.nfc	42
+Der Grueffelo/Der Grueffelo & Das Grueffelokind (Relaunch 2026).nfc	52
+Der Grueffelo/Der Grueffelo.nfc	52
+Der Loewe in dir/Der Loewe in dir und andere Geschichten.nfc	34
+Der Raeuber Hotzenplotz/Der Raeuber Hotzenplotz.nfc	111
 Der Raeuber Hotzenplotz/Und die Mondrakete.nfc	50
 Der Regenbogenfisch/Der Regenbogenfisch.nfc	53
 Der Sternenmann/Lieder und Hoerspiel zur guten Nacht.nfc	45
 Der Traumzauberbaum/Geschichtenlieder.nfc	44
-Der Weihnachtosaurus/Der Weihnachtosaurus.nfc	309
+Der kleine Drache Kokosnuss/Hoerspiel zur TV-Serie 01.nfc	56
 Der kleine Drache Kokosnuss/Hoerspiel zur TV-Serie 02.nfc	60
 Der kleine Drache Kokosnuss/Hoerspiel zur TV-Serie 03.nfc	60
+Der kleine Drache Kokosnuss/Hoerspiel zur TV-Serie 04.nfc	56
+Der kleine Elefant/Der kleine Elefant, der so gerne einschlafen moechte.nfc	34
+Der kleine Hui Buh/Wie Hui Buh seine Rasselkette bekam & Die Halloween-Party.nfc	63
 Der kleine Nick/Der kleine Nick ist der Beste.nfc	72
+Der kleine Prinz/Der Kleine Prinz.nfc	66
+Der kleine Prinz/Der kleine Prinz (Neuauflage 2025).nfc	66
 Der kleine Rabe Socke/Alles Schule.nfc	40
 Der kleine Rabe Socke/Alles erlaubt.nfc	40
+Der kleine Rabe Socke/Alles vermurkst.nfc	49
 Der kleine Siebenschlaefer/Die Geschichte vom kleinen Siebenschlaefer, der nicht einschlafen konnte.nfc	45
 Der kleine Wassermann/Der kleine Wassermann (Neuauflage 2022).nfc	117
 Der magische Blumenladen/Ein Geheimnis kommt selten allein.nfc	77
+Die Biene Maja/Der Bienentanz (Grashuepfer Flip).nfc	81
+Die Biene Maja/Der Schmetterlingsball (Willi).nfc	68
 Die Biene Maja/Majas Geburt (Maja).nfc	79
-Die Eule mit der Beule/Die Eule mit der Beule.nfc	34
-Die Eule mit der Beule/Die kleine Eule feiert Weihnachten.nfc	39
-Die Eule mit der Beule/Die kleine Eule singt und tanzt - Das 2. Liederalbum.nfc	40
-Die Eule mit der Beule/Gute Nacht, kleine Eule.nfc	49
-Die Eule mit der Beule/Liederalbum.nfc	41
+Die Glubschis/Miss Crayon auf heisser Spur.nfc	60
+Die Haeschenschule/Die neue Haeschenschule.nfc	39
+Die Haferhorde/Immer den Nuestern nach.nfc	139
 Die Haferhorde/Volle Maehne!.nfc	121
 Die Olchi-Detektive/Das Erbe der Piraten.nfc	42
 Die Olchi-Detektive/Ritter der Popelrunde.nfc	43
@@ -75,76 +82,38 @@ Die Playmos/Der Ball im Prinzessinnen-Schloss.nfc	60
 Die Playmos/Der Schatz der Teufelsinsel.nfc	50
 Die Playmos/Grossbrand in der Feuerwache.nfc	58
 Die Punkies/Buehne frei fuer die Punkies.nfc	69
+Die Schluempfe/Ein tollpatschiger Held & 3 weitere schlumpfige Abenteuer.nfc	50
+Die Schluempfe/Ein unwiderschlumpfliches Laecheln & 3 weitere schlumpfige Abenteuer.nfc	50
+Die Schluempfe/Hefty Schlumpf - Wer ist heftiger & 3 weitere schlumpfige Abenteuer.nfc	54
 Die Schule der magischen Tiere/Die Schule der magischen Tiere.nfc	82
 Die Sendung mit der Maus & dem Elefanten/Die Sendung mit dem Elefanten.nfc	33
 Die Sendung mit der Maus & dem Elefanten/Mit der Maus die Welt entdecken.nfc	33
-Die Sendung mit der Maus & dem Elefanten/Schlaf schoen (Elefant).nfc	38
-Die Sendung mit der Maus & dem Elefanten/Schlaf schoen (Maus).nfc	38
-Die drei Ausrufezeichen/Das Geheimnis der alten Villa.nfc	68
-Die drei Ausrufezeichen/Das rote Phantom.nfc	69
-Die drei Ausrufezeichen/Mission Pferdeshow.nfc	64
 Die drei Fragezeichen Kids/Invasion der Fliegen.nfc	60
 Die drei Fragezeichen Kids/Panik im Paradies.nfc	70
 Die drei Fragezeichen Kids/Radio Rocky Beach.nfc	66
 Die drei Fragezeichen/Der Super-Papagei.nfc	50
 Die drei Raeuber/Die drei Raeuber.nfc	68
+Die kleine Hexe/Die kleine Hexe.nfc	116
+Die kleine Hexe/Die neugierige kleine Hexe & Die kleine Hexe hat Geburtstag.nfc	55
+Die kleine Hummel Bommel/Die kleine Hummel Bommel sucht das Glueck.nfc	57
 Die kleine Raupe Nimmersatt/Schlaf gut! Die kleine Raupe Nimmersatt und weitere Geschichten.nfc	44
 Die kleine Schnecke Monika Haeuschen/Warum stolpern Tausendfuessler nicht.nfc	42
-Disney/101 Dalmatiner.nfc	56
-Disney/Aladdin.nfc	60
-Disney/Arielle die Meerjungfrau.nfc	57
-Disney/Aristocats.nfc	55
-Disney/Bambi.nfc	50
-Disney/Cap und Capper.nfc	50
-Disney/Cars 2.nfc	60
-Disney/Cars.nfc	50
-Disney/Cinderella.nfc	59
-Disney/Coco.nfc	76
-Disney/Das Dschungelbuch.nfc	59
-Disney/Der Koenig der Loewen.nfc	48
-Disney/Die Eiskoenigin - Olaf taut auf.nfc	47
-Disney/Die Eiskoenigin 2.nfc	70
-Disney/Die Eiskoenigin.nfc	71
-Disney/Die Monster AG.nfc	59
-Disney/Die Monster Uni.nfc	68
-Disney/Die Schoene und das Biest.nfc	59
-Disney/Dumbo.nfc	51
-Disney/Encanto.nfc	65
-Disney/Fantasia.nfc	63
-Disney/Findet Dorie.nfc	75
-Disney/Findet Nemo.nfc	60
-Disney/Hercules.nfc	47
-Disney/Kuess den Frosch.nfc	31
-Disney/Merida - Legende der Highlands.nfc	67
-Disney/Mickys total verruecktes Fussballspiel.nfc	60
-Disney/Mulan.nfc	55
-Disney/Oben.nfc	60
-Disney/Pocahontas.nfc	53
-Disney/Ratatouille.nfc	47
-Disney/Raya und der letzte Drache.nfc	72
-Disney/Soul.nfc	69
-Disney/Susi und Strolch.nfc	54
-Disney/Tinkerbell.nfc	54
-Disney/Toy Story 2.nfc	45
-Disney/Toy Story 3.nfc	60
-Disney/Toy Story.nfc	57
-Disney/Vaiana.nfc	76
-Disney/Wicked.nfc	70
-Disney/Winnie Puuh auf grosser Reise.nfc	46
-Disney/Wish.nfc	79
 Dora/Dora.nfc	60
-Dreamworks/Kung Fu Panda.nfc	73
-Dreamworks/Madagascar.nfc	55
+Dr. Brumm/Dr. Brumm steckt fest.nfc	28
 Ein Freund wie kein anderer/Ein Freund wie kein anderer.nfc	104
+Ella/Ella in der Schule.nfc	114
 Elmar/Kunterbunte Geschichten.nfc	51
-Emma die Ente/Emma die Ente - Das Beste von herrH.nfc	62
 Erdbeerinchen Erdbeerfee/Zauberhafte Geschichten aus dem Erdbeergarten.nfc	42
 Eule findet den Beat/Auf Europatour.nfc	92
 Eule findet den Beat/Ein Entdeckerflug durch die Musikwelt.nfc	91
+Eule findet den Beat/Eule findet den Beat Set - Ein Entdeckerflug durch die Musikwelt.nfc	91
+Europa-Park/Ed & Edda - Grand Prix of Europe.nfc	68
 Fantasiereisen mit Faultier Mo/8 besondere Orte zum Entspannen.nfc	76
 Felix/Briefe von Felix.nfc	53
 Felix/Weltbeste Briefe von Felix.nfc	69
+Feuerwehrmann Sam/Eine Insel voller Abenteuer (Penny).nfc	68
 Feuerwehrmann Sam/In Pontypandy ist was los (Sam).nfc	60
+Feuerwehrmann Sam/Wettlauf gegen die Zeit.nfc	60
 Frederick/Frederick und seine Maeusefreunde.nfc	58
 Fredrik Vahle/Zugabe.nfc	56
 Fuenf Freunde/Fuenf Freunde auf der Suche nach Timmy.nfc	55
@@ -158,22 +127,35 @@ Gigantosaurus/Mazus Mutprobe.nfc	52
 Giraffenaffen/Die Giraffenaffen Lieblingslieder.nfc	66
 Giraffenaffen/Die Giraffenaffen Partyhits.nfc	60
 Gloria Gluehwuermchen/Bezaubernde Gutenachtgeschichten.nfc	128
+Green Team/Mission Rettung an Land mit Nina dem roten Panda.nfc	61
+Green Team/Mission Rettung im Wasser mit Bobby, der Meeresschildkroete.nfc	64
+Green Team/Mission Rettung in den Bergen mit Uli, dem Leoparden.nfc	60
+Green Team/Mission Rettung in der Luft mit John, der Schnee-Eule.nfc	60
 Greg's Tagebuch/Von Idioten umzingelt.nfc	78
-Grimm und Moehrchen/Grimm und Moehrchen - Ein Zesel zieht ein.nfc	91
+Griechische Sagen/Griechische Sagen.nfc	100
+Gus/Die Legende von Gus und DREI weitere Geschichten.nfc	50
 Gute Nacht, Gorilla/Gute Nacht, Gorilla und weitere Einschlafhoerspiele.nfc	38
 Hanni und Nanni/Hanni und Nanni im Hochzeitsrausch.nfc	59
+Hanni und Nanni/Hanni und Nanni voll im Trend.nfc	63
 Hasenkind/Nur noch kurz die Ohren kraulen.nfc	35
+Heavysaurus/Pommesgabel - Best of Dino Metal (Neuauflage 2025).nfc	73
 Heidi/Die Reise zum Grossvater.nfc	60
+Heidi/Ein Wolf im Doerfli.nfc	64
 Heidi/Freunde fuer immer.nfc	63
+Heule Eule/Heule Eule und andere Geschichten.nfc	32
 Hot Wheels/Hot Wheels.nfc	60
+Hurra Kinderlieder/Hurra Kinderlieder - Best of.nfc	55
 Ich - einfach unverbesserlich/Ich - Einfach unverbesserlich 4.nfc	81
 Ich - einfach unverbesserlich/Ich - einfach unverbesserlich 1.nfc	58
 Jan Tenner/Jan Tenner - Planet der 1000 Wunder.nfc	42
 Janosch/Als Tiger und Baer beinahe das Beste verpassten.nfc	45
 Janosch/Ich mach dich gesund, sagte der Baer.nfc	52
 Janosch/Oh, wie schoen ist Panama.nfc	55
-Kaeptn Blaubaer/Seemannsgarn.nfc	50
+Janosch/Post fuer den Tiger.nfc	46
+JoNaLu/Lu kann nicht schlafen & eine weitere Geschichte.nfc	73
 Kai Lueftners Kuerbiskopp/Ein musikalisches Roadmovie.nfc	80
+Kaptn Sharky/Kaeptn Sharky und das Geheimnis der Schatzinsel.nfc	41
+Kaptn Sharky/Kaeptn Sharky und das Seeungeheuer.nfc	38
 Karmas Welt/Karmas Welt.nfc	50
 Kikaninchen/Die Mischung machts!.nfc	49
 Kinderliederzug/Bitte alle einsteigen!.nfc	60
@@ -183,42 +165,71 @@ Kleiner Otter, grosses Herz/Lieder und Geschichten zum Liebhaben.nfc	45
 Kosmo und Klax/Freundschaftsgeschichten.nfc	77
 Kueken Pitti/Oster- und Fruehlingsgeschichten.nfc	50
 LEA/LEAs Welt.nfc	60
+Lassie/Lassie - Freunde fuers Leben.nfc	50
+Leo Lausemaus/Das Original-Hoerspiel zu den Buechern 1.nfc	46
 Leo Lausemaus/Das Original-Hoerspiel zu den Buechern 2.nfc	50
+Leos Tag/1, 2, 3, sei beim Aufraeumen dabei!.nfc	50
+Leos Tag/Achtung, fertig, Zaehneputzen!.nfc	50
 Leos Tag/Es ist so weit - Badezeit!.nfc	50
 Leos Tag/Hoppala, wer schnieft denn da.nfc	60
+Leos Tag/Windel, Toepfchen, Klo - das geht so!.nfc	50
 Lichterkinder/Die besten Spiel- und Bewegungslieder.nfc	50
 Lichterkinder/Die besten Weihnachts- und Winterlieder.nfc	53
 Lichterkinder/Laternen- und Herbstlieder.nfc	52
 Lieblings-Kinderlieder/Europaeische Kinderlieder.nfc	50
+Lieblings-Kinderlieder/Geburtstagslieder (Neuauflage 2021).nfc	50
+Lieblings-Kinderlieder/Geburtstagslieder.nfc	50
 Lieblings-Kinderlieder/Halloween & Spuk.nfc	50
 Lieblings-Kinderlieder/Herbst- und Laternenlieder.nfc	50
 Lieblings-Kinderlieder/Jahreszeitenlieder.nfc	54
 Lieblings-Kinderlieder/Karnevalslieder.nfc	50
+Lieblings-Kinderlieder/Kindergartenlieder (Neuauflage 2026).nfc	50
+Lieblings-Kinderlieder/Kindergartenlieder.nfc	50
 Lieblings-Kinderlieder/Reiselieder (Neuauflage 2023).nfc	60
-Lieblings-Kinderlieder/Unsere besten Kniereiter, Fingerspiellieder und Reime.nfc	40
+Lieblings-Kinderlieder/Reiselieder.nfc	60
+Lieblings-Kinderlieder/Schlaflieder 2 (Neuauflage 2021).nfc	50
+Lieblings-Kinderlieder/Schlaflieder 2.nfc	50
+Lieblings-Kinderlieder/Schlaflieder.nfc	50
+Lieblings-Kinderlieder/Spiel- und Bewegungslieder 2 (Neuauflage 2023).nfc	49
+Lieblings-Kinderlieder/Spiel- und Bewegungslieder 2.nfc	49
+Lieblings-Kinderlieder/Spiel- und Bewegungslieder.nfc	49
+Lieblings-Kinderlieder/Tierlieder.nfc	53
+Lieblings-Kinderlieder/Weihnachtslieder 2 (Neuauflage 2022).nfc	54
+Lieblings-Kinderlieder/Weihnachtslieder 2.nfc	54
+Lieblings-Kinderlieder/Weihnachtslieder.nfc	54
+Lieblings-Kinderlieder/Zaehllieder (Neuauflage 2023).nfc	52
 Lieblings-Klassiker/Alice im Wunderland und zwei weitere Klassiker.nfc	60
 Lieblings-Klassiker/Der Zauberer von OZ und zwei weitere Klassiker.nfc	60
 Lieblings-Klassiker/Peter Pan und 4 weitere Klassiker.nfc	61
 Lieblings-Klassiker/Pinocchio (Neuauflage 2024).nfc	75
+Lieblings-Klassiker/Pinocchio und 4 weitere Klassiker.nfc	61
 Lieblings-Klassiker/Robinson Crusoe und vier weitere Klassiker.nfc	80
-Lieblings-Literatur/Eine Weihnachtsgeschichte.nfc	130
+Lieblings-Maerchen/Der gestiefelte Kater (Neuauflage 2023).nfc	60
 Lieblings-Maerchen/Rapunzel (Neuauflage 2023).nfc	52
+Lieblings-Maerchen/Rapunzel und 4 weitere Maerchen.nfc	50
+Lieblings-Maerchen/Rotkaeppchen und 4 weitere Maerchen.nfc	50
 Lieblings-Maerchen/Sterntaler und 4 weitere Maerchen.nfc	50
 Lieblings-Meisterstuecke/Der Nussknacker.nfc	49
 Lieblings-Meisterstuecke/Haensel und Gretel.nfc	46
 Lieblings-Meisterstuecke/Schwanensee.nfc	48
 Liliane Susewind/Ein Meerschwein ist nicht gern allein.nfc	46
 Lindbergh/Die abenteuerliche Geschichte einer fliegenden Maus.nfc	43
-MIRA und das fliegende Haus/MIRA und das fliegende Haus - Der Familienzauber.nfc	35
+Mama Muh/Mama Muh und die Kraehe.nfc	40
 Mascha und der Baer/Ein neuer Freund fuer Mascha.nfc	40
+Mascha und der Baer/Winterschlaf fuer alle + 5 weitere quirlige und lustige Geschichten.nfc	50
 Mein Lotta-Leben/Alles voller Kaninchen.nfc	69
+Mia and me/Ankunft in Centopia & Eine neue Hoffnung.nfc	45
+Mia and me/Das goldene Einhorn & Onchao und das Paradies.nfc	45
 Miffy/Miffy.nfc	61
 Minimusiker/Lieder fuer dich 2.nfc	50
 Minimusiker/Lieder fuer dich.nfc	50
+Miraculous/Der Betrueger  - Der Valentinstag.nfc	46
 Miraculous/Miraculous - Aller Anfang ist schwer.nfc	49
 Nasreddin Hodscha/Seine ersten Abenteuer.nfc	85
 Ohrenbaer/Mulles Zaubersteinchen.nfc	37
 Ostwind/Zusammen sind wir frei.nfc	80
+PAW Patrol/Der Delfin-Freund (Sky).nfc	56
+PAW Patrol/Der Piratenschatz  (Rubble).nfc	55
 PAW Patrol/Die Hundeschau.nfc	50
 PAW Patrol/Die Rettung der Meeresschildkroeten.nfc	51
 PAW Patrol/Ein neuer Fellfreund.nfc	50
@@ -226,12 +237,18 @@ PAW Patrol/Hier kommt Tracker.nfc	55
 PAW Patrol/Jungle Pups - Chase.nfc	45
 PAW Patrol/Jungle Pups - Marshall.nfc	45
 PAW Patrol/Jungle Pups - Skye.nfc	45
+PAW Patrol/Liberty findet einen neuen Freund.nfc	52
+PAW Patrol/Rettung fuer T-Rex.nfc	51
 PAW Patrol/Ryder.nfc	50
 PAW Patrol/Schneller als die Feuerwehr.nfc	59
 PAW Patrol/Zuma.nfc	48
+PJ Masks/Ein maechtiges Mondproblem.nfc	86
 PJ Masks/Los gehts Pyjamahelden.nfc	87
 PJ Masks/Zeit ein Held zu sein.nfc	78
+Paddington/Die schoensten Geschichten von Paddington.nfc	46
 Paddington/Geschichten von Paddington.nfc	157
+Peppa Pig/Das Schulfest & 7 weitere Geschichten.nfc	42
+Peppa Pig/Die Ritterburg und 7 weitere Geschichten.nfc	44
 Peppa Pig/Die schoensten Geschichten von Schorsch.nfc	44
 Peppa Pig/Gute-Nacht Geschichten mit Peppa.nfc	41
 Peppa Pig/Meine Geburtstagsparty.nfc	43
@@ -244,11 +261,16 @@ Pettersson und Findus/Findus und der Hahn im Korb.nfc	34
 Pettersson und Findus/Findus zieht um.nfc	33
 Pettersson und Findus/Wie Findus zu Pettersson kam.nfc	30
 Petzi/Petzi - Drei Landratten bauen ein Schiff.nfc	68
+Pippi Langstrumpf/Pippi Langstrumpf - Das Hoerspiel (Neuauflage 2025).nfc	124
 Pippi Langstrumpf/Pippi Langstrumpf 2 - Pippi Langstrumpf geht an Bord.nfc	144
+Pippi Langstrumpf/Pippi Langstrumpf.nfc	124
 Pittiplatsch/Neue Abenteuer mit Pittiplatsch.nfc	63
 Pixi Wissen/Planeten und Sterne.nfc	33
 Planet Omar/Planet Omar.nfc	110
+Prinzessin Lillifee/Gute-Nacht-Geschichten - Die verzauberten Seerosen+Die goldene Perle.nfc	50
 Prinzessin Lillifee/Prinzessin Lillifee.nfc	54
+Pumuckl/Spuk in der Werkstatt & Das verkaufte Bett.nfc	49
+Rachel Bright Series/Trau dich, Koalabaer.nfc	36
 Raeuber Ratte/Raeuber Ratte & Superwurm.nfc	36
 Ralph Ruthe/Ralph Ruthe Das Klo.nfc	30
 Rico und Oskar/Rico, Oskar und die Tieferschatten.nfc	52
@@ -258,19 +280,30 @@ Rolf Zuckowski/Rolfs Hasengeschichte.nfc	40
 Rolf Zuckowski/Rolfs neue Vogelhochzeit.nfc	36
 Rotz 'n' Roll Radio/Jubel, Trubel, Heiserkeit.nfc	79
 Safiras/Nanami und das traumhafte Tuch & Ninazu und das gruene Zauberbonbon.nfc	65
-Schaun das Schaf/Badetag und drei weitere schafsinnige Geschichten.nfc	70
+Schlummerbande/Gutenachtgeschichten - Schlaf schoen, kleiner Schlummerbaer.nfc	40
+Schlummerbande/Klassik zum Einschlafen - Traeum schoen, kleiner Schlummerhase.nfc	90
+Schlummerbande/Nachtlicht Tonie - Schlummerbaer.nfc	75
 Schlummerbande/Nachtlicht Tonie - Schlummerhase.nfc	75
 Schlummerbande/Nachtlicht Tonie - Schlummerkrokodil.nfc	75
 Schlummerbande/Nachtlicht Tonie - Schlummerpinguin.nfc	75
 Schlummerbande/Nachtlicht Tonie - Schlummerschaf.nfc	75
+Schlummerbande/Schlummerente - Eine Klangreise durch den Schlummerwald (Limited Edition).nfc	120
 Schlummerbande/Schlummerjaguar - Einschlafmelodien aus dem Schlummerdschungel.nfc	140
 Schlummerbande/Schlummerkrokodil - Eine Gutenachtgeschichte aus dem Schlummerdschungel.nfc	48
+Schlummerbande/Schlummeroktopus - Eine Gutenachtgeschichte aus dem Ozean.nfc	40
+Schlummerbande/Schlummerschaf - Einschlafmelodien aus dem Zauberwald.nfc	140
 Schlummerbande/Schlummerschaf - Einschlafmelodien von der Weide.nfc	140
 Schlummerbande/Schlummerwal - Einschlafmelodien aus dem Ozean.nfc	140
-Sendung mit der Maus zum hoeren/Frag doch mal die Maus - Wissen fuer Kinder.nfc	72
+Schuettel den Apfelbaum/Schuettel den Apfelbaum & Schaukel das Schaf.nfc	50
 Sesamstrasse/Elmos Mitmachmusik.nfc	40
 Sesamstrasse/Ernies Mitmachmaerchen.nfc	45
 Sesamstrasse/Kruemelmonsters Mitmampfspass.nfc	40
+Sing Kinderlieder/Bagger Mats + seine Freunde - Die schoensten Fahrzeuglieder.nfc	60
+Sing Kinderlieder/Milo, das Muellauto-Kind + seine Freunde - Abenteuer in der grossen Stadt.nfc	60
+Sing Kinderlieder/Timmy Traktor & seine Freunde Ferien auf dem Bauernhof.nfc	60
+Snoefrid aus dem Wiesental/Das wahrlich grosse Geheimnis von Appelgarden.nfc	90
+Spirit/SPIRIT - Frei und Ungezaehmt.nfc	61
+SpongeBob Schwammkopf/SpongeBob Schwammkopf - Der ferngesteuerte Fahrschueler und weitere Abenteuer.nfc	61
 St. Pauli Rabauken/Entscheidung am Millerntor.nfc	151
 Steiff Soft Cuddly Friends/Bodo Schimpanse.nfc	76
 Steiff Soft Cuddly Friends/Dinkie Esel.nfc	76
@@ -286,11 +319,14 @@ Sven van Thom/Tanz den Spatz.nfc	44
 TKKG Junior/Der rote Retter.nfc	61
 TKKG Junior/Giftige Schokolade.nfc	58
 Tabaluga/Das grosse Ereignis.nfc	55
+Tabaluga/Drachen weinen nicht & Mondsuechtig.nfc	50
 Teenage Mutant Ninja Turtles/Die Abenteuer der Teenage Mutant Ninja Turtles - Leonardo.nfc	63
+Tilda Apfelkern/Das drinnen Picknick.nfc	57
 Tilda Apfelkern/Das geheime Kuchenrezept.nfc	58
 Toto und der Mann im Mond/Toto und der Mann im Mond.nfc	68
 Unser Sandmaennchen/Abends im Walde.nfc	53
 Unser Sandmaennchen/Nachts, wenn alles schlaeft.nfc	57
+Unter meinem Bett/Unter meinem Bett 1.nfc	45
 Unter meinem Bett/Unter meinem Bett 2.nfc	45
 Unter meinem Bett/Unter meinem Bett 3.nfc	48
 Unter meinem Bett/Unter meinem Bett 4.nfc	52
@@ -301,19 +337,19 @@ Volker Rosin/Das singende Kaenguru.nfc	50
 Volker Rosin/Der Gorilla mit der Sonnenbrille.nfc	53
 Vom Fuchs, der ein Reh sein wollte/Vom Fuchs, der ein Reh sein wollte.nfc	110
 WAS IST WAS Junior/Bauernhof.nfc	43
-WAS IST WAS/Dinosaurier - Ausgestorbene Tiere.nfc	26
+WAS IST WAS/Dinosaurier - Ausgestorbene Tiere.nfc	70
 WAS IST WAS/Pinguine - Tiere im Zoo.nfc	48
-Weihnachtsmann und Co.KG/Die magische Perle, Rudolph ist verschwunden.nfc	55
+WAS IST WAS/Raumfahrt - Der Mond.nfc	70
+WAS IST WAS/Wale und Delfine - Geheimnis Tiefsee.nfc	79
+WAS IST WAS/Wunderbare Pferde - Reitervolk Mongolen.nfc	79
 Weisst du eigentlich, wie lieb ich dich hab/Weisst du eigentlich, wie lieb ich dich hab.nfc	35
 Wickie/Die Koenigin der Winde.nfc	61
 Wickie/Tanz mit dem Wolf und sechs weitere Episoden.nfc	69
 Wickie/Wasser auf die Muehlen.nfc	65
 Wie kleine Tiere schlafen gehen/Wie kleine Tiere schlafen gehen - Wie kleine Kinder schlafen gehen.nfc	50
-Wieso Weshalb Warum Junior/Der Wald.nfc	30
-Wieso Weshalb Warum Junior/Die Feuerwehr - Die Rettungsfahrzeuge.nfc	53
-Wieso Weshalb Warum/Die Polizei.nfc	32
 Wir sind nachher wieder da, wir muessen kurz nach Afrika/Wir sind nachher wieder da, wir muessen kurz nach Afrika.nfc	73
-Wundervolle Welt der Tiere/Wundervolle Welt der Tiere.nfc	57
 Yakari/Best of Kleiner Donner.nfc	39
 Yakari/Best of Regenbogen.nfc	49
 Yakari/Best of Yakari.nfc	45
+Yoga Geschichten/Mit leichten Uebungen zum Entspannen.nfc	60
+Zoes Zauberschrank/Eule.nfc	46

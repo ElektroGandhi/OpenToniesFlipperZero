@@ -56,29 +56,34 @@ def load_sitemap():
     return exact, by_series
 
 def match_url(series, episode, exact, by_series):
-    sSlug, eSlug = slug(series), slug(episode)
-    if (sSlug, eSlug) in exact:
-        return exact[(sSlug, eSlug)]
-    cands = by_series.get(sSlug)
-    if not cands and "/" in episode:  # Kompilation "A / B" -> erste Serie/Teil
-        eSlug = slug(episode.split("/")[0])
+    sSlug = slug(series)
+    # Bei Kompilationen "A / B" zusaetzlich nur den ersten Teil probieren.
+    ep_variants = [slug(episode)]
+    if "/" in episode:
+        ep_variants.append(slug(episode.split("/")[0]))
+    for eSlug in ep_variants:
         if (sSlug, eSlug) in exact:
             return exact[(sSlug, eSlug)]
+    cands = by_series.get(sSlug)
     if not cands:
         return None
-    et = set(t for t in eSlug.split("-") if t)
     best, best_score = None, 0.0
-    for es, url in cands:
-        st = set(t for t in es.split("-") if t)
-        if not st:
+    for eSlug in ep_variants:
+        et = set(t for t in eSlug.split("-") if t)
+        if not et:
             continue
-        inter = len(et & st)
-        union = len(et | st)
-        score = inter / union if union else 0.0
-        if es.startswith(eSlug) or eSlug.startswith(es):
-            score = max(score, 0.92)
-        if score > best_score:
-            best_score, best = score, url
+        for es, url in cands:
+            st = set(t for t in es.split("-") if t)
+            if not st:
+                continue
+            inter = len(et & st)
+            union = len(et | st)
+            score = inter / union if union else 0.0
+            # Praefix-Bonus nur bei ausreichend langem Slug (vermeidet Kurz-Titel-Fehltreffer)
+            if len(eSlug) >= 6 and (es.startswith(eSlug) or eSlug.startswith(es)):
+                score = max(score, 0.92)
+            if score > best_score:
+                best_score, best = score, url
     return best if best_score >= 0.5 else None
 
 def extract_minutes(html):

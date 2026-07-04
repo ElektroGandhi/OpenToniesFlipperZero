@@ -125,7 +125,9 @@ static void strlist_append(StrList* l, const char* s) {
         l->items = ni;
         l->cap = ncap;
     }
-    l->items[l->count++] = strdup(s);
+    char* cp = strdup(s);
+    if(!cp) return; // OOM: keinen NULL-Eintrag in die Liste haengen
+    l->items[l->count++] = cp;
 }
 static void strlist_clear(StrList* l) {
     for(size_t i = 0; i < l->count; i++) free(l->items[i]);
@@ -331,11 +333,12 @@ static void load_settings(App* app) {
         app->opt_uppercase = cfg_int(buf, "uppercase=", 1) != 0;
         app->opt_hide_images = cfg_int(buf, "hide_images=", 0) != 0;
         app->opt_led_on = cfg_int(buf, "led_on=", 1) != 0;
-        app->opt_led_color = (uint8_t)(cfg_int(buf, "led_color=", 0) % LED_COLOR_COUNT);
-        app->opt_led_bright = (uint8_t)(cfg_int(buf, "led_bright=", 1) % LED_BRIGHT_COUNT);
-        app->opt_timer_idx = (uint8_t)(cfg_int(buf, "timer_idx=", 0) % TIMER_COUNT);
+        // unsigned-Cast VOR dem Modulo: sonst bleibt z.B. -1 % N == -1 -> (uint8_t)255 -> OOB-Index
+        app->opt_led_color = (uint8_t)((unsigned)cfg_int(buf, "led_color=", 0) % LED_COLOR_COUNT);
+        app->opt_led_bright = (uint8_t)((unsigned)cfg_int(buf, "led_bright=", 1) % LED_BRIGHT_COUNT);
+        app->opt_timer_idx = (uint8_t)((unsigned)cfg_int(buf, "timer_idx=", 0) % TIMER_COUNT);
         app->opt_timer_action = cfg_int(buf, "timer_action=", 0) != 0;
-        app->opt_scroll = (uint8_t)(cfg_int(buf, "scroll=", 0) % SCROLL_COUNT);
+        app->opt_scroll = (uint8_t)((unsigned)cfg_int(buf, "scroll=", 0) % SCROLL_COUNT);
     }
     storage_file_close(f);
     storage_file_free(f);
@@ -546,6 +549,8 @@ static void timer_cb(void* ctx) {
 // Marquee-Tick: lange Namen weiterschieben (nur auf Browse-Screens + Laufschrift an).
 static void scroll_cb(void* ctx) {
     App* app = ctx;
+    // Bewusst ohne Mutex: nur Anzeige-Zustand. scroll_off (aligned uint16) sowie screen/opt_scroll
+    // sind auf Cortex-M atomar; schlimmstenfalls ein ungenauer Marquee-Frame, kein Crash/OOB.
     if(app->opt_scroll && (app->screen == ScreenSeries || app->screen == ScreenEpisode)) {
         app->scroll_off += SCROLL_STEP[app->opt_scroll];
         view_port_update(app->view_port);
@@ -777,6 +782,7 @@ static void handle_key(App* app, InputKey key) {
             reload_icon(app);
             break;
         case InputKeyOk: {
+            if(!app->series.count) break; // leere Sammlung: kein items[0]-Deref
             FuriString* p = furi_string_alloc();
             furi_string_printf(p, "%s/%s", TONIE_DIR, app->series.items[app->series_idx]);
             read_dir(app, furi_string_get_cstr(p), false, &app->episodes);

@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.0.0-beta.5 — Robustheit (2026-07-04)
+
+### Fixes (nach interner Code-Review)
+- **Kein Absturz bei leerer Sammlung**: OK auf dem „KEINE TONIES"-Screen (frische Installation
+  ohne Figuren-Dumps) griff auf eine leere Liste zu → jetzt sauber abgefangen.
+- **Kein Absturz bei korrupter `settings.txt`**: negative/ungültige Werte werden auf gültige
+  Indizes geklemmt (vorher Out-of-bounds-Zugriff beim Start).
+- Kleinere Härtungen: `strdup`-OOM-Prüfung in der Listen-Verwaltung; Marquee-Timer-Zugriff als
+  bewusst-harmlos dokumentiert.
+- Tool `gen_durations.py`: toten Kompilations-Fallback repariert + Präfix-Match mit Mindestlänge
+  (verbessert die Trefferquote bei der nächsten Regenerierung).
+
 ## v1.0.0-beta.4 — (2026-07-04)
 
 ### Verbesserungen

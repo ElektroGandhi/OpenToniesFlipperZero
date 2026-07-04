@@ -164,13 +164,17 @@ Die Tabelle deckt erst **~58 %** ab — **Beiträge sind willkommen!** So geht's
 
 - 🌐 Höhere Abdeckung der Spieldauer-Tabelle (bessere Titel→tonies.com-Zuordnung).
 - 🈳 Bild-Sprache umschaltbar (**DE / EN / FR**).
-- 🤖 **Android-Companion-App** — die Sammlung bequem vom Handy pflegen:
-  - Figuren-Dumps & Bilder per **USB-OTG** auf den Flipper übertragen,
-  - **Icon-Pipeline am Telefon** (Zuschnitt/Kontur/Dithering) statt am PC,
-  - Favoriten & Reihenfolge synchronisieren, **Backup/Restore** der SD-Struktur,
-  - Bibliotheks-Browser mit Suche.
+- 💭 **Laut gedacht — Web-App als Companion** (statt einer nativen App): eine Web-App,
+  die auf **jedem Endgerät** läuft (Smartphone, Tablet, PC), ohne App-Store. Denkbar wären
+  **visuelle Tonie-Auswahl** am großen Bildschirm, **Start/Stop** der Emulation und
+  komfortable Sammlungs-/Favoritenverwaltung — so würde der Flipper-„Tonie" mit dem
+  Smartphone als Companion ein Stück **smarter** 🙂.
 
-> Ideen, Wünsche oder Pull Requests dazu sind willkommen — Issues gern aufmachen.
+  > Das ist vorerst **nur die Idee** — wird noch **nicht** aktiv entwickelt. Und bevor
+  > überhaupt etwas online geht, machen wir unsere **Security-Hausaufgaben**. Lieber
+  > sicher als schnell.
+
+> Ideen, Wünsche oder Pull Requests sind willkommen — Issues gern aufmachen.
 
 ## Vollständig vibecoded — und das ist gut so 🎈
 

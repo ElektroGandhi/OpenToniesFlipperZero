@@ -41,6 +41,10 @@ static const char* const LED_BRIGHT_NAME[] = {"niedrig", "mittel", "hoch"};
 static const uint16_t TIMER_MIN[] = {0, 30, 45, 60, 90};
 static const char* const TIMER_NAME[] = {"Aus", "30 min", "45 min", "60 min", "90 min"};
 #define TIMER_COUNT 5
+// Laufschrift-Tempo: Index 0 = Aus; sonst Pixel pro Tick (Timer alle 120 ms).
+static const uint8_t SCROLL_STEP[] = {0, 1, 2, 3};
+static const char* const SCROLL_NAME[] = {"Aus", "langsam", "mittel", "schnell"};
+#define SCROLL_COUNT 4
 #define SETTINGS_COUNT 8
 static const char* const SETTING_LABEL[] =
     {"Schrift", "Bilder", "LED", "LED-Farbe", "Helligkeit", "Auto-Timer", "Aktion", "Laufschrift"};
@@ -93,7 +97,7 @@ typedef struct {
     uint8_t opt_led_bright; // Index in LED_BRIGHT_*
     uint8_t opt_timer_idx;  // Index in TIMER_* (0 = Aus)
     bool opt_timer_action;  // false = Aus (Strom sparen), true = Replay-Bounce
-    bool opt_scroll;        // lange Namen horizontal durchlaufen lassen (Laufschrift)
+    uint8_t opt_scroll;     // Laufschrift-Tempo: 0=Aus, 1..3 = langsam/mittel/schnell
     size_t settings_idx;    // markierter Eintrag in der Setup-Seite
 
     FuriTimer* timer;         // Auto-Aus/Replay-Timer
@@ -316,7 +320,7 @@ static void load_settings(App* app) {
     app->opt_led_bright = 1;      // mittel
     app->opt_timer_idx = 0;       // Auto-Timer aus
     app->opt_timer_action = false;// Aktion: Aus
-    app->opt_scroll = false;      // Laufschrift aus
+    app->opt_scroll = 0;          // Laufschrift aus
     File* f = storage_file_alloc(app->storage);
     if(storage_file_open(f, SETTINGS_FILE, FSAM_READ, FSOM_OPEN_EXISTING)) {
         char buf[256];
@@ -329,7 +333,7 @@ static void load_settings(App* app) {
         app->opt_led_bright = (uint8_t)(cfg_int(buf, "led_bright=", 1) % LED_BRIGHT_COUNT);
         app->opt_timer_idx = (uint8_t)(cfg_int(buf, "timer_idx=", 0) % TIMER_COUNT);
         app->opt_timer_action = cfg_int(buf, "timer_action=", 0) != 0;
-        app->opt_scroll = cfg_int(buf, "scroll=", 0) != 0;
+        app->opt_scroll = (uint8_t)(cfg_int(buf, "scroll=", 0) % SCROLL_COUNT);
     }
     storage_file_close(f);
     storage_file_free(f);
@@ -345,7 +349,7 @@ static void save_settings(App* app) {
             "timer_idx=%d\ntimer_action=%d\nscroll=%d\n",
             app->opt_uppercase ? 1 : 0, app->opt_hide_images ? 1 : 0, app->opt_led_on ? 1 : 0,
             app->opt_led_color, app->opt_led_bright, app->opt_timer_idx,
-            app->opt_timer_action ? 1 : 0, app->opt_scroll ? 1 : 0);
+            app->opt_timer_action ? 1 : 0, app->opt_scroll);
         if(m > 0) storage_file_write(f, line, (size_t)m);
     }
     storage_file_close(f);
@@ -539,7 +543,7 @@ static void timer_cb(void* ctx) {
 static void scroll_cb(void* ctx) {
     App* app = ctx;
     if(app->opt_scroll && (app->screen == ScreenSeries || app->screen == ScreenEpisode)) {
-        app->scroll_off += 2;
+        app->scroll_off += SCROLL_STEP[app->opt_scroll];
         view_port_update(app->view_port);
     }
 }
@@ -598,8 +602,10 @@ static void draw_marquee(Canvas* c, int x, int y, int w, const char* s, uint16_t
         canvas_draw_str(c, x, y, s);
         return;
     }
-    int period = (int)tw + 16; // Textbreite + Luecke
-    int o = (int)(off % (uint16_t)period);
+    int period = (int)tw + 16; // Scroll-Distanz (Textbreite + Luecke)
+    int pause = 14;            // kurzer Halt am Anfang jedes Durchlaufs (Namensanfang lesbar)
+    int t = (int)(off % (uint16_t)(period + pause));
+    int o = (t < pause) ? 0 : (t - pause);
     canvas_draw_str(c, x - o, y, s);
     canvas_draw_str(c, x - o + period, y, s);
 }
@@ -613,7 +619,7 @@ static void setting_value(App* app, int i, char* out, size_t n) {
     case 4: snprintf(out, n, "%s", LED_BRIGHT_NAME[app->opt_led_bright]); break;
     case 5: snprintf(out, n, "%s", TIMER_NAME[app->opt_timer_idx]); break;
     case 6: snprintf(out, n, "%s", app->opt_timer_action ? "Replay" : "Aus"); break;
-    case 7: snprintf(out, n, "%s", app->opt_scroll ? "AN" : "AUS"); break;
+    case 7: snprintf(out, n, "%s", SCROLL_NAME[app->opt_scroll]); break;
     default: out[0] = 0; break;
     }
 }
@@ -822,7 +828,7 @@ static void handle_key(App* app, InputKey key) {
             case 4: app->opt_led_bright = (app->opt_led_bright + 1) % LED_BRIGHT_COUNT; break;
             case 5: app->opt_timer_idx = (app->opt_timer_idx + 1) % TIMER_COUNT; break;
             case 6: app->opt_timer_action = !app->opt_timer_action; break;
-            case 7: app->opt_scroll = !app->opt_scroll; break;
+            case 7: app->opt_scroll = (app->opt_scroll + 1) % SCROLL_COUNT; break;
             default: break;
             }
             save_settings(app);
@@ -858,7 +864,7 @@ static App* app_alloc(void) {
     view_port_input_callback_set(app->view_port, input_callback, app);
     gui_add_view_port(app->gui, app->view_port, GuiLayerFullscreen);
     app->scroll_timer = furi_timer_alloc(scroll_cb, FuriTimerTypePeriodic, app);
-    furi_timer_start(app->scroll_timer, 70);
+    furi_timer_start(app->scroll_timer, 120);
     return app;
 }
 static void app_free(App* app) {

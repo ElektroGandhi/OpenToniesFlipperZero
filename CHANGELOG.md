@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.0-beta.4 — (2026-07-04)
+
+### Verbesserungen
+- **Favoriten markieren unterbricht das Durchblättern nicht mehr**: der Cursor bleibt an
+  Ort und Stelle (nur der Stern erscheint), statt der Serie an ihren neuen Platz nach vorne
+  zu folgen. Favoriten wandern erst beim nächsten App-Start nach vorne — so kann man die
+  ganze Bibliothek in Ruhe durchgehen und markieren.
+- **Laufschrift langsamer + neue Stufe „sehr langsam"** (Sub-Pixel-Tempo):
+  Aus / sehr langsam / langsam / mittel / schnell.
+
 ## v1.0.0-beta.3 — Hotfix (2026-07-04)
 
 ### Fixes

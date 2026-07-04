@@ -43,8 +43,9 @@ auch ein Vierjähriger bedienen kann.
 
 - 📱 **Hochformat-UI** (64×128) mit großem Figuren-Bild und Name.
 - 🗂️ **Zwei Ebenen**: Serie → Geschichte, komplett bild­geführt.
-- ⭐ **Favoriten**: Lieblingsserien landen ganz vorne (Toggle per **langem OK**), damit
-  man nicht durch alle 255 Serien blättern muss.
+- ⭐ **Favoriten**: Lieblingsserien landen (ab dem nächsten Start) ganz vorne — Toggle per
+  **langem OK**, **ohne das Durchblättern zu unterbrechen** (der Stern erscheint, der Cursor
+  bleibt stehen), damit man in Ruhe die ganze Bibliothek durchgehen und markieren kann.
 - ⚡ **Direkte SLIX-L-Emulation** bei OK — exakt der Weg der eingebauten NFC-App
   (`NfcProtocolSlix`, `SlixTypeSlixL`).
 - 💡 **LED-Blink** (zyan) während der Emulation als sichtbares „läuft"-Signal.
@@ -134,7 +135,7 @@ zwei Sekunden erreichbar:
 | **Helligkeit** | niedrig / mittel / hoch | Helligkeit der LED. |
 | **Auto-Timer** | Aus / 30 / 45 / 60 / 90 min | Beendet die Emulation nach Ablauf (Strom sparen). Nutzt die **echte Spieldauer** des Tonies, falls bekannt — sonst den eingestellten Wert als Fallback. |
 | **Aktion** | `Aus` / `Replay` | Nach der Timer-Zeit: **Aus** = Emulation stoppen · **Replay** = kurz aus (5 s) & wieder an, um „neu aufstellen" zu simulieren (experimentell). |
-| **Laufschrift** | Aus / langsam / mittel / schnell | Zu lange Namen **laufen horizontal durch** (statt abgeschnitten) — mit **einstellbarem Tempo**, damit das Kind auch komplette lange Titel lesen kann. |
+| **Laufschrift** | Aus / sehr langsam / langsam / mittel / schnell | Zu lange Namen **laufen horizontal durch** (statt abgeschnitten) — mit **einstellbarem Tempo**, damit das Kind auch komplette lange Titel lesen kann. |
 
 Gespeichert in `SD:/apps_data/toniekids/settings.txt`; überlebt Neustarts. Standard:
 Schrift **GROSS**, Bilder **an**, LED **an** (zyan/mittel), Auto-Timer **aus**.

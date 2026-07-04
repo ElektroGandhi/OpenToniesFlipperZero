@@ -41,10 +41,12 @@ static const char* const LED_BRIGHT_NAME[] = {"niedrig", "mittel", "hoch"};
 static const uint16_t TIMER_MIN[] = {0, 30, 45, 60, 90};
 static const char* const TIMER_NAME[] = {"Aus", "30 min", "45 min", "60 min", "90 min"};
 #define TIMER_COUNT 5
-// Laufschrift-Tempo: Index 0 = Aus; sonst Pixel pro Tick (Timer alle 120 ms).
-static const uint8_t SCROLL_STEP[] = {0, 1, 2, 3};
-static const char* const SCROLL_NAME[] = {"Aus", "langsam", "mittel", "schnell"};
-#define SCROLL_COUNT 4
+// Laufschrift-Tempo: Index 0 = Aus; sonst 1/8-Pixel pro Tick (Timer alle 120 ms).
+// Sub-Pixel erlaubt sehr langsame Stufen (~px/s ≈ Wert): 2≈langsam-langsam, 14≈flott.
+static const uint8_t SCROLL_STEP[] = {0, 2, 4, 8, 14};
+static const char* const SCROLL_NAME[] =
+    {"Aus", "sehr langsam", "langsam", "mittel", "schnell"};
+#define SCROLL_COUNT 5
 #define SETTINGS_COUNT 8
 static const char* const SETTING_LABEL[] =
     {"Schrift", "Bilder", "LED", "LED-Farbe", "Helligkeit", "Auto-Timer", "Aktion", "Laufschrift"};
@@ -378,7 +380,7 @@ static void build_series_ordered(App* app) {
 }
 static void toggle_favorite(App* app) {
     if(!app->series.count) return;
-    char* cur = strdup(app->series.items[app->series_idx]);
+    const char* cur = app->series.items[app->series_idx];
     int fi = -1;
     for(size_t i = 0; i < app->favorites.count; i++)
         if(strcmp(app->favorites.items[i], cur) == 0) {
@@ -394,14 +396,16 @@ static void toggle_favorite(App* app) {
         strlist_append(&app->favorites, cur);
     }
     save_favorites(app);
-    build_series_ordered(app);
-    for(size_t i = 0; i < app->series.count; i++)
-        if(strcmp(app->series.items[i], cur) == 0) {
-            app->series_idx = i;
-            break;
-        }
-    free(cur);
-    reload_icon(app);
+    // Bewusst KEINE Neu-Sortierung der Serienliste hier: das Markieren soll das Durchblaettern
+    // NICHT unterbrechen (Cursor bleibt stehen, nur der Stern erscheint/verschwindet). Die
+    // Favoriten wandern erst beim naechsten App-Start nach vorne.
+    {
+        char line[96];
+        snprintf(
+            line, sizeof(line), "fav toggle idx=%u now=%d fav_n=%u\n", (unsigned)app->series_idx,
+            fi < 0 ? 1 : 0, (unsigned)app->favorites.count);
+        diag_write(app, line, false);
+    }
 }
 
 // ---------- LED ----------
@@ -603,8 +607,9 @@ static void draw_marquee(Canvas* c, int x, int y, int w, const char* s, uint16_t
         return;
     }
     int period = (int)tw + 16; // Scroll-Distanz (Textbreite + Luecke)
-    int pause = 14;            // kurzer Halt am Anfang jedes Durchlaufs (Namensanfang lesbar)
-    int t = (int)(off % (uint16_t)(period + pause));
+    int pause = 8;             // kurzer Halt am Anfang jedes Durchlaufs (Namensanfang lesbar)
+    int px = (int)(off >> 3);  // off ist in 1/8-Pixel -> ganze Pixel
+    int t = px % (period + pause);
     int o = (t < pause) ? 0 : (t - pause);
     canvas_draw_str(c, x - o, y, s);
     canvas_draw_str(c, x - o + period, y, s);

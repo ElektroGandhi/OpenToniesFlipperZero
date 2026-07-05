@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.0.0-beta.6 — Log & Timer-Präzision (2026-07-05)
+
+### Neu
+- **Log-Option im Setup** (`log.txt` mit ms-Zeitstempeln): protokolliert die Emulations-/
+  Timer-Kette — u. a. „auto-timer AUS" vs. „timer scharf: Xmin" und das Feuern (auto-aus /
+  replay). Damit lässt sich nachvollziehen, warum das Auto-Aus (nicht) auslöst.
+
+### Fixes
+- Timer nutzen jetzt `furi_ms_to_ticks` (korrekte ms→Ticks-Umrechnung, unabhängig von der
+  Tick-Rate). **Auto-Aus verifiziert**: feuert punktgenau (~1 ms) nach der eingestellten Dauer.
+
 ## v1.0.0-beta.5 — Robustheit (2026-07-04)
 
 ### Fixes (nach interner Code-Review)

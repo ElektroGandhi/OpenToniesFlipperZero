@@ -3,6 +3,7 @@
 // OK auf einer Geschichte emuliert die SLIX-L-Figur direkt fuer die Toniebox.
 
 #include <furi.h>
+#include <stdarg.h>
 #include <gui/gui.h>
 #include <input/input.h>
 #include <storage/storage.h>
@@ -20,6 +21,7 @@
 #define FAV_FILE "/ext/apps_data/toniekids/favorites.txt"
 #define SETTINGS_FILE "/ext/apps_data/toniekids/settings.txt"
 #define DURATIONS_FILE "/ext/apps_data/toniekids/durations.txt"
+#define LOG_FILE "/ext/apps_data/toniekids/log.txt"
 
 // LED-Farbpalette (Light-Kanalmasken) + Anzeigenamen
 static const uint8_t LED_COLOR_MASK[] = {
@@ -47,9 +49,10 @@ static const uint8_t SCROLL_STEP[] = {0, 2, 4, 8, 14};
 static const char* const SCROLL_NAME[] =
     {"Aus", "sehr langsam", "langsam", "mittel", "schnell"};
 #define SCROLL_COUNT 5
-#define SETTINGS_COUNT 8
-static const char* const SETTING_LABEL[] =
-    {"Schrift", "Bilder", "LED", "LED-Farbe", "Helligkeit", "Auto-Timer", "Aktion", "Laufschrift"};
+#define SETTINGS_COUNT 9
+static const char* const SETTING_LABEL[] = {"Schrift",    "Bilder",     "LED",
+                                            "LED-Farbe",  "Helligkeit", "Auto-Timer",
+                                            "Aktion",     "Laufschrift", "Log"};
 
 // 13x13 Stern (Favoriten-Marker), XBM LSB-first
 static const uint8_t star_bits[] = {
@@ -99,7 +102,8 @@ typedef struct {
     uint8_t opt_led_bright; // Index in LED_BRIGHT_*
     uint8_t opt_timer_idx;  // Index in TIMER_* (0 = Aus)
     bool opt_timer_action;  // false = Aus (Strom sparen), true = Replay-Bounce
-    uint8_t opt_scroll;     // Laufschrift-Tempo: 0=Aus, 1..3 = langsam/mittel/schnell
+    uint8_t opt_scroll;     // Laufschrift-Tempo: 0=Aus, 1..4 = sehr langsam..schnell
+    bool opt_log;           // Diagnose-Log nach log.txt schreiben
     size_t settings_idx;    // markierter Eintrag in der Setup-Seite
 
     FuriTimer* timer;         // Auto-Aus/Replay-Timer
@@ -201,6 +205,43 @@ static void diag_write(App* app, const char* line, bool truncate) {
            f, "/ext/apps_data/toniekids/diag.txt", FSAM_WRITE,
            truncate ? FSOM_CREATE_ALWAYS : FSOM_OPEN_APPEND)) {
         storage_file_write(f, line, strlen(line));
+    }
+    storage_file_close(f);
+    storage_file_free(f);
+}
+
+// ---------- Log (umschaltbar im Setup) ----------
+// Frisches Log mit Kopfzeile (Einstellungs-Snapshot) — bei Aktivierung/Start.
+static void log_start(App* app) {
+    if(!app->opt_log) return;
+    storage_common_mkdir(app->storage, "/ext/apps_data/toniekids");
+    File* f = storage_file_alloc(app->storage);
+    if(storage_file_open(f, LOG_FILE, FSAM_WRITE, FSOM_CREATE_ALWAYS)) {
+        char l[176];
+        int m = snprintf(
+            l, sizeof(l), "== OpenTonies Log ==\n[%lu] timer=%s aktion=%s laufschrift=%s led=%d\n",
+            (unsigned long)furi_get_tick(), TIMER_NAME[app->opt_timer_idx],
+            app->opt_timer_action ? "replay" : "aus", SCROLL_NAME[app->opt_scroll],
+            app->opt_led_on ? 1 : 0);
+        if(m > 0) storage_file_write(f, l, (size_t)m);
+    }
+    storage_file_close(f);
+    storage_file_free(f);
+}
+// Ereigniszeile mit ms-Zeitstempel anhaengen (nur wenn Log an).
+static void tk_log(App* app, const char* fmt, ...) {
+    if(!app->opt_log) return;
+    char body[112];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(body, sizeof(body), fmt, ap);
+    va_end(ap);
+    char l[144];
+    int m = snprintf(l, sizeof(l), "[%lu] %s\n", (unsigned long)furi_get_tick(), body);
+    storage_common_mkdir(app->storage, "/ext/apps_data/toniekids");
+    File* f = storage_file_alloc(app->storage);
+    if(m > 0 && storage_file_open(f, LOG_FILE, FSAM_WRITE, FSOM_OPEN_APPEND)) {
+        storage_file_write(f, l, (size_t)m);
     }
     storage_file_close(f);
     storage_file_free(f);
@@ -325,6 +366,7 @@ static void load_settings(App* app) {
     app->opt_timer_idx = 0;       // Auto-Timer aus
     app->opt_timer_action = false;// Aktion: Aus
     app->opt_scroll = 0;          // Laufschrift aus
+    app->opt_log = false;         // Log aus
     File* f = storage_file_alloc(app->storage);
     if(storage_file_open(f, SETTINGS_FILE, FSAM_READ, FSOM_OPEN_EXISTING)) {
         char buf[256];
@@ -339,6 +381,7 @@ static void load_settings(App* app) {
         app->opt_timer_idx = (uint8_t)((unsigned)cfg_int(buf, "timer_idx=", 0) % TIMER_COUNT);
         app->opt_timer_action = cfg_int(buf, "timer_action=", 0) != 0;
         app->opt_scroll = (uint8_t)((unsigned)cfg_int(buf, "scroll=", 0) % SCROLL_COUNT);
+        app->opt_log = cfg_int(buf, "log=", 0) != 0;
     }
     storage_file_close(f);
     storage_file_free(f);
@@ -351,10 +394,10 @@ static void save_settings(App* app) {
         int m = snprintf(
             line, sizeof(line),
             "uppercase=%d\nhide_images=%d\nled_on=%d\nled_color=%d\nled_bright=%d\n"
-            "timer_idx=%d\ntimer_action=%d\nscroll=%d\n",
+            "timer_idx=%d\ntimer_action=%d\nscroll=%d\nlog=%d\n",
             app->opt_uppercase ? 1 : 0, app->opt_hide_images ? 1 : 0, app->opt_led_on ? 1 : 0,
             app->opt_led_color, app->opt_led_bright, app->opt_timer_idx,
-            app->opt_timer_action ? 1 : 0, app->opt_scroll);
+            app->opt_timer_action ? 1 : 0, app->opt_scroll, app->opt_log ? 1 : 0);
         if(m > 0) storage_file_write(f, line, (size_t)m);
     }
     storage_file_close(f);
@@ -462,10 +505,16 @@ static uint16_t lookup_duration(App* app) {
 }
 // Auto-Timer scharf schalten: echte Dauer, sonst Fallback aus der Einstellung. Rueckgabe = min (0 = aus).
 static uint16_t arm_timer(App* app) {
-    if(TIMER_MIN[app->opt_timer_idx] == 0) return 0;
-    uint16_t mins = lookup_duration(app);
-    if(mins == 0) mins = TIMER_MIN[app->opt_timer_idx];
-    furi_timer_start(app->timer, (uint32_t)mins * 60u * 1000u);
+    if(TIMER_MIN[app->opt_timer_idx] == 0) {
+        tk_log(app, "auto-timer AUS -> keine automatische Abschaltung");
+        return 0;
+    }
+    uint16_t real = lookup_duration(app);
+    uint16_t mins = real ? real : TIMER_MIN[app->opt_timer_idx];
+    furi_timer_start(app->timer, furi_ms_to_ticks((uint32_t)mins * 60u * 1000u));
+    tk_log(
+        app, "timer scharf: %umin (%s), aktion=%s", (unsigned)mins,
+        real ? "echte dauer" : "fallback", app->opt_timer_action ? "replay" : "aus");
     return mins;
 }
 
@@ -514,6 +563,7 @@ static bool emulate_start(App* app) {
     listener_arm(app);
     app->emulating = true;
     app->replay_pending = false;
+    tk_log(app, "emulate START: %s", app->episodes.items[app->episode_idx]);
     uint16_t tmin = arm_timer(app);
     {
         char line[128];
@@ -526,6 +576,7 @@ static bool emulate_start(App* app) {
     return true;
 }
 static void emulate_stop(App* app) {
+    if(app->emulating) tk_log(app, "emulate STOP");
     if(app->timer) furi_timer_stop(app->timer);
     app->replay_pending = false;
     listener_disarm(app);
@@ -638,6 +689,7 @@ static void setting_value(App* app, int i, char* out, size_t n) {
     case 5: snprintf(out, n, "%s", TIMER_NAME[app->opt_timer_idx]); break;
     case 6: snprintf(out, n, "%s", app->opt_timer_action ? "Replay" : "Aus"); break;
     case 7: snprintf(out, n, "%s", SCROLL_NAME[app->opt_scroll]); break;
+    case 8: snprintf(out, n, "%s", app->opt_log ? "AN" : "AUS"); break;
     default: out[0] = 0; break;
     }
 }
@@ -847,6 +899,10 @@ static void handle_key(App* app, InputKey key) {
             case 5: app->opt_timer_idx = (app->opt_timer_idx + 1) % TIMER_COUNT; break;
             case 6: app->opt_timer_action = !app->opt_timer_action; break;
             case 7: app->opt_scroll = (app->opt_scroll + 1) % SCROLL_COUNT; break;
+            case 8:
+                app->opt_log = !app->opt_log;
+                if(app->opt_log) log_start(app); // frisches Log beim Einschalten
+                break;
             default: break;
             }
             save_settings(app);
@@ -882,7 +938,7 @@ static App* app_alloc(void) {
     view_port_input_callback_set(app->view_port, input_callback, app);
     gui_add_view_port(app->gui, app->view_port, GuiLayerFullscreen);
     app->scroll_timer = furi_timer_alloc(scroll_cb, FuriTimerTypePeriodic, app);
-    furi_timer_start(app->scroll_timer, 120);
+    furi_timer_start(app->scroll_timer, furi_ms_to_ticks(120));
     return app;
 }
 static void app_free(App* app) {
@@ -921,6 +977,7 @@ int32_t toniekids_app(void* p) {
             TIMER_NAME[app->opt_timer_idx], app->series.count ? app->series.items[0] : "-");
         diag_write(app, line, true);
     }
+    log_start(app);
     view_port_update(app->view_port);
 
     InputEvent event;
@@ -935,15 +992,20 @@ int32_t toniekids_app(void* p) {
                         app->replay_pending = false; // 5s vorbei -> wieder aufstellen
                         listener_arm(app);
                         arm_timer(app);
+                        tk_log(app, "replay: 5s um -> wieder aufgestellt");
                     } else if(app->opt_timer_action) {
+                        tk_log(app, "replay: Timer abgelaufen -> 5s aus");
                         listener_disarm(app); // Replay: kurz weg (Feld aus), 5s Pause
                         app->replay_pending = true;
-                        furi_timer_start(app->timer, 5000);
+                        furi_timer_start(app->timer, furi_ms_to_ticks(5000));
                     } else {
+                        tk_log(app, "auto-aus: Timer abgelaufen -> Emulation beenden");
                         emulate_stop(app); // Aus: Emulation beenden (Strom sparen)
                         app->screen = ScreenEpisode;
                         reload_icon(app);
                     }
+                } else {
+                    tk_log(app, "Timer feuerte ausserhalb der Wiedergabe (ignoriert)");
                 }
                 furi_mutex_release(app->mutex);
                 view_port_update(app->view_port);

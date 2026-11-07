@@ -25,7 +25,7 @@ jobs:
           mkdir site
           cp -r web/font web/index.html web/index2.html web/icon-*.png web/manifest*.webmanifest web/opentonies_bridge.js site/
           python3 tools/demo_bibliothek.py --web site
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
       - id: pages

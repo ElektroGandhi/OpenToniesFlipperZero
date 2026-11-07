@@ -43,7 +43,7 @@ jobs:
           app-dir: src
           sdk-channel: ${{ matrix.channel }}
           sdk-index-url: ${{ matrix.index }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: toniekids-${{ matrix.name }}
           path: ${{ steps.ufbt.outputs.fap-artifacts }}

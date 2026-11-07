@@ -1,0 +1,33 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>held</title>
+<style>html,body{margin:0;padding:0}iframe{width:375px;height:812px;border:0;display:block}</style>
+</head><body>
+<!-- Prüfseite: legt Lieblinge und Hörverlauf an, damit die Heldkarte und der
+     Trenner "Alle anderen" überhaupt erscheinen. Ohne Vorbelegung zeigt das
+     Regal sie zu Recht nicht — dann wäre die Hervorhebung Willkür.
+     ?dark=1 für den Dunkelmodus. -->
+<script>
+localStorage.setItem('tk_favs', JSON.stringify(['Benjamin Bluemchen','Bibi Blocksberg','Janosch']));
+localStorage.setItem('tk_counts', JSON.stringify({'Benjamin Bluemchen':7,'Janosch':3}));
+</script>
+<iframe id="f" src="/index.html"></iframe>
+<script>
+const dark=new URLSearchParams(location.search).has('dark');
+const f=document.getElementById('f');
+f.onload=()=>setTimeout(()=>{
+  const d=f.contentDocument;
+  let darkCss='';
+  if(dark){
+    for(const sheet of d.styleSheets){
+      try{ for(const rule of sheet.cssRules)
+        if(rule.type===CSSRule.MEDIA_RULE && /dark/.test(rule.conditionText))
+          for(const r of rule.cssRules) darkCss+=r.cssText;
+      }catch(e){}
+    }
+  }
+  const st=d.createElement('style');
+  st.textContent='*{transition:none!important;animation:none!important}'+darkCss;
+  d.head.appendChild(st);
+  document.title='ok';
+},2200);
+</script>
+</body></html>

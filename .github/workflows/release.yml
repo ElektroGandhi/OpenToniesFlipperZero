@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: flipperdevices/flipperzero-ufbt-action@v0.1.4
+        id: momentum
+        with:
+          app-dir: src
+          sdk-channel: release
+          sdk-index-url: https://up.momentum-fw.dev/firmware/directory.json
+      - run: mkdir -p aus && cp ${{ steps.momentum.outputs.fap-artifacts }} aus/toniekids-momentum.fap
+      - uses: flipperdevices/flipperzero-ufbt-action@v0.1.4
+        id: official
+        with:
+          app-dir: src
+          sdk-channel: release
+          # Ausdrücklich setzen: ufbt behält sonst den Index des vorigen Schritts (Momentum).
+          sdk-index-url: https://update.flipperzero.one/firmware/directory.json
+      - name: SDK-Herkunft prüfen
+        run: |
+          test "${{ steps.official.outputs.api-version }}" != "${{ steps.momentum.outputs.api-version }}" \
+            || echo "::warning::Gleiche API-Version in beiden Builds, bitte Herkunft prüfen"
+      - run: cp ${{ steps.official.outputs.fap-artifacts }} aus/toniekids-official.fap
+      - run: cd aus && sha256sum *.fap > SHA256SUMS.txt
+      - name: Release anlegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          art=""
+          case "$GITHUB_REF_NAME" in *-*) art="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" aus/* $art --verify-tag \
+            --title "$GITHUB_REF_NAME" --notes-file docs/release-notes.md

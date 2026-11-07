@@ -1,0 +1,48 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>warte</title></head><body>
+<!-- Temporaere Messseite. Muss vom SELBEN Server kommen wie die Zielseite,
+     sonst ist contentDocument gesperrt und die Messung liefert stumm nichts. -->
+<iframe id="f" src="/index.html" style="width:375px;height:800px;border:0"></iframe>
+<script>
+const f=document.getElementById('f');
+// Schwelle kommt aus der URL (?soll=NN), damit sie NICHT an zwei Stellen
+// gepflegt wird. Vorgabe 76 = Kindergrenze.
+const SOLL = Number(new URLSearchParams(location.search).get('soll')) || 76;
+function measure(){
+  const d=f.contentDocument, w=f.contentWindow;
+  // Uebergaenge abschalten: sonst liefert getComputedStyle den Startwert.
+  const st=d.createElement('style');
+  st.textContent='*{transition:none!important;animation:none!important}';
+  d.head.appendChild(st);
+
+  const res={mode:d.body.dataset.mode, innerWidth:w.innerWidth,
+             scrollWidth:d.documentElement.scrollWidth};
+  res.overflow = res.scrollWidth > res.innerWidth;
+  res.cards = d.querySelectorAll('.card').length;
+
+  const small=[];
+  for(const b of d.querySelectorAll('button')){
+    const r=b.getBoundingClientRect();
+    if(r.width<1 && r.height<1) continue;              // nicht sichtbar
+    if(r.width<SOLL || r.height<SOLL)
+      small.push((b.id||b.className)+' '+Math.round(r.width)+'x'+Math.round(r.height));
+  }
+  res.tooSmall=small; res.soll=SOLL;
+
+  const c=d.querySelector('.card');
+  if(c){const r=c.getBoundingClientRect();
+        res.cardSize=Math.round(r.width)+'x'+Math.round(r.height);}
+  const img=d.querySelector('.card img');
+  if(img){const r=img.getBoundingClientRect();
+          res.imgSize=Math.round(r.width)+'x'+Math.round(r.height);}
+  // Schriftgroessen auszaehlen (Deckelung: hoechstens 3)
+  const sizes=new Set();
+  d.querySelectorAll('main *').forEach(e=>{
+    const t=(e.textContent||'').trim();
+    if(t && e.children.length===0) sizes.add(w.getComputedStyle(e).fontSize);
+  });
+  res.fontSizes=[...sizes].sort();
+  document.title=JSON.stringify(res);
+}
+f.onload=()=>setTimeout(measure,2000);
+</script>
+</body></html>

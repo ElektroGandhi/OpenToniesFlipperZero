@@ -1,0 +1,17 @@
+Schriften: Baloo 2 und Nunito, beide SIL Open Font License 1.1.
+Einmalig von Google Fonts geladen und hier LOKAL ausgeliefert — zur Laufzeit
+wird kein fremder Server angefragt (kein CDN, keine Nachverfolgung).
+Nur das latin-Subset; das deckt Deutsch samt Umlauten und ß ab.
+
+Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2)
+Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
+Lizenztext: web/font/OFL.txt
+
+Baloo 2  — https://fonts.google.com/specimen/Baloo+2   (Ek Type, OFL 1.1)
+Nunito   — https://fonts.google.com/specimen/Nunito    (Vernon Adams u. a., OFL 1.1)
+
+Neu holen: ueber die CSS2-API von Google Fonts, z. B.
+  https://fonts.googleapis.com/css2?family=Nunito:wght@400;800&display=swap
+und daraus die latin-woff2 herunterladen. Ein eigenes Werkzeug dazu liegt
+NICHT in tools/ — die Dateien werden von Hand geholt und committet, damit
+die App ohne Netzzugriff aufgebaut werden kann.

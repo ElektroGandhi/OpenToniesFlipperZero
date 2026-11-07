@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  repo:
+    name: Repo-Prüfung
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/pruefe_repo.py --selbsttest
+      - run: python3 tools/pruefe_repo.py
+      - name: Python-Syntax
+        run: python3 -m compileall -q tools docs/media/quelle
+
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: momentum
+            channel: release
+            index: https://up.momentum-fw.dev/firmware/directory.json
+          - name: momentum-dev
+            channel: dev
+            index: https://up.momentum-fw.dev/firmware/directory.json
+          - name: official
+            channel: release
+            index: https://update.flipperzero.one/firmware/directory.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: flipperdevices/flipperzero-ufbt-action@v0.1.4
+        id: ufbt
+        with:
+          app-dir: src
+          sdk-channel: ${{ matrix.channel }}
+          sdk-index-url: ${{ matrix.index }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toniekids-${{ matrix.name }}
+          path: ${{ steps.ufbt.outputs.fap-artifacts }}

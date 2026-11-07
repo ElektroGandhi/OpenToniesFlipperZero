@@ -1,0 +1,22 @@
+{
+  "wifi": {
+    "ssid": "DEIN_WLAN_NAME",
+    "password": "DEIN_WLAN_PASSWORT"
+  },
+  "flipper": {
+    "mac": "A4:CF:12:XX:XX:XX",
+    "auto_connect": true
+  },
+  "bridge": {
+    "host": "0.0.0.0",
+    "port": 80,
+    "timeout": 30
+  },
+  "status_led": {
+    "pin": 2,
+    "active_low": true
+  },
+  "mdns": {
+    "hostname": "opentonies-bridge"
+  }
+}

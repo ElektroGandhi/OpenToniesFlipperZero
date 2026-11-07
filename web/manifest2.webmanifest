@@ -1,0 +1,25 @@
+{
+  "name": "Meine Geschichten (Entwurf 2)",
+  "short_name": "Geschichten 2",
+  "description": "Zweiter Entwurf: Nachthimmel, satte Farben, Regalbretter. Liegt parallel zu Entwurf 1 (index.html).",
+  "start_url": "index2.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2b2170",
+  "theme_color": "#2b2170",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

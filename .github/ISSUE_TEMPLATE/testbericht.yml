@@ -1,0 +1,23 @@
+name: 🧪 Testbericht · Test report
+description: Du hast etwas am echten Gerät geprüft · You checked something on a real device
+labels: [testbericht]
+body:
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware und Version · Firmware and version
+    validations:
+      required: true
+  - type: dropdown
+    id: bereich
+    attributes:
+      label: Bereich · Area
+      options: [Toniebox, Bluetooth, ESP8266-Brücke / bridge, Auto-Timer, Andere / Other]
+    validations:
+      required: true
+  - type: textarea
+    id: ergebnis
+    attributes:
+      label: Was hast du geprüft, und was kam heraus? · What did you check, and what was the result?
+    validations:
+      required: true

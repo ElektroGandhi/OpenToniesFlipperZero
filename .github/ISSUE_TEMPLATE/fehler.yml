@@ -1,0 +1,40 @@
+name: 🐞 Fehler melden · Report a bug
+description: Etwas funktioniert nicht wie beschrieben · Something doesn't work as described
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Bitte keine `.nfc`-Dateien oder Schlüsselwerte anhängen.**
+        **Please don't attach `.nfc` files or key values.**
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware und Version · Firmware and version
+      placeholder: Momentum mntm-012
+    validations:
+      required: true
+  - type: input
+    id: app
+    attributes:
+      label: App-Version · App version
+      placeholder: v1.0.0-beta.13
+    validations:
+      required: true
+  - type: textarea
+    id: was
+    attributes:
+      label: Was ist passiert, was hast du erwartet? · What happened, what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Schritte zum Nachstellen · Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log (`apps_data/toniekids/log.txt`)
+      render: text

@@ -1,0 +1,16 @@
+name: 💡 Idee · Idea
+description: Vorschlag für eine neue Funktion · Suggest a new feature
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem löst das? · What problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: vorschlag
+    attributes:
+      label: Dein Vorschlag · Your suggestion
+    validations:
+      required: true

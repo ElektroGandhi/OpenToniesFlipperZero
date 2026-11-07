@@ -1,0 +1,4 @@
+# Benötigte MicroPython-Module für die ESP8266 BLE Bridge
+# Installieren mit: ampy --port /dev/ttyUSB0 upip install -r requirements.txt
+
+ble-advertising

@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meine Geschichten (Entwurf 2)</title>
+<!-- Vom Startbildschirm aus ohne Adressleiste starten, mit eigenem Bild und
+     eigenem Namen. Fuer ein Kind ist "meine App" ein groesserer Unterschied als
+     jede Animation — und es kostet drei Zeilen. Das Icon ist selbst gezeichnet
+     (kein Produktfoto, §11). -->
+<!-- ⛔ KORRIGIERT 12.09.2026: Hier stand `manifest.webmanifest` — das ist
+     das von Entwurf 1, mit `"start_url": "./"`. Wer Entwurf 2 auf den
+     Startbildschirm legte, startete damit Entwurf 1. -->
+<link rel="manifest" href="manifest2.webmanifest">
+<!-- Ohne rel="icon" fragt der Browser /favicon.ico ab und laeuft in einen 404
+     — im Tab und im Lesezeichen bleibt das Bild leer. Dieselbe Datei wie das
+     apple-touch-icon (kein zusaetzlicher Abruf). -->
+<link rel="icon" href="icon-180.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Geschichten">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- #0d9488 war der Entwurf-1-Ton — und genau der, den der Kommentar am
+     --accent-Token als verworfen beschreibt. Hell ist hier violett. -->
+<meta name="theme-color" content="#2b2170" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b2340" media="(prefers-color-scheme: dark)">
+<style>
+/* Schriften liegen LOKAL unter font/ — kein CDN, kein fremder Server zur
+   Laufzeit. Herkunft und Lizenz: font/HERKUNFT.txt (beide OFL 1.1).
+   Baloo 2 traegt die Namen und Knoepfe: kraeftige, runde Formen, die kindlich
+   wirken ohne Comic zu sein. Nunito traegt den Fliesstext der Beschreibungen:
+   warm und auch in kleinen Graden gut lesbar.
+   `font-display:swap` — die Seite ist sofort lesbar, die Schrift tauscht nach. */
+@font-face{font-family:'Baloo';src:url(font/Baloo2-500.woff2) format('woff2');
+  font-weight:500;font-display:swap}
+@font-face{font-family:'Baloo';src:url(font/Baloo2-800.woff2) format('woff2');
+  font-weight:800;font-display:swap}
+@font-face{font-family:'Nunito';src:url(font/Nunito-400.woff2) format('woff2');
+  font-weight:400;font-display:swap}
+@font-face{font-family:'Nunito';src:url(font/Nunito-800.woff2) format('woff2');
+  font-weight:800;font-display:swap}
+</style>
+<style>
+/* ===========================================================================
+   Zielgerät: Telefon, 375 px. Zielgruppe: Kinder im Vorlesealter.
+   Maßstäbe aus der Wahrnehmungsforschung:
+     - Kinder brauchen GRÖSSER: >= 75 px (~2 cm) für alles, was ein Kind unter
+       neun treffen muss. Die Bildkacheln liegen bei ~165 px.
+     - Bedienung muss OHNE LESEN tragen (Prüfung 5, "Textfrei") -> der Weg
+       läuft über Bilder; Text ist Beschriftung, nie Wegweiser.
+     - Druckzustand ist Pflicht, Reaktion < 100 ms.
+     - Hell ist die bessere Vorgabe.
+     - Deckelung: 3 Schriftgrößen, 4 Vordergrundfarben.
+   =========================================================================== */
+/* --- Farbwelt: ein Setzkasten -------------------------------------------
+   Jede Serie bekommt eine eigene Farbkarte; die freigestellte Figur steht
+   darauf. Die Fröhlichkeit kommt damit aus dem Inhalt (viele bunte Figuren
+   nebeneinander = Fülle), nicht aus aufgeklebter Deko.
+   Bewusst KEINE Comic-Optik: laut NN/g lehnen Kinder Material ab, das unter
+   ihrem Niveau wirkt — ein Kind verwarf eine Seite als "für Babys".
+   Hell = Spielzimmer am Tag, Dunkel = Gutenachtgeschichte (Nachtblau statt
+   Fast-Schwarz, das wirkte gruftig). */
+:root{
+  /* ZWEITENTWURF — satte Farben, Regalbretter, Figuren die herausragen.
+     Die erste Fassung galt als "zu nuechtern, zu blass, zu leer, zu statisch".
+     Hier ist jede dieser vier Achsen bewusst gedreht. */
+  --bg:#2b2170; --bg2:#1a1540;
+  --card:#3b2f86; --ink:#ffffff; --ink2:#c9c2f0;
+  --line:#5a4bb8;
+  --brett:#7a4a1f; --brett-kante:#5c3414;
+  /* Kante fuer Bedienelemente (#back, #q, .row, .favbtn) — muss >= 3:1 gegen
+     die Seite tragen, sonst ist die Umrandung optisch nicht zu erkennen.
+     --line traegt dort 2,02:1 (der frueher hier genannte Wert 1,25:1 war
+     Entwurf 1 und blieb beim Farbtausch stehen) und ist deshalb weiter Trennlinien
+     (header border-bottom, .shelfsep) vorbehalten. */
+  --line-strong:#8a9ab4;
+  /* Frueher #0d9488 — mit Weiss aber nur 3,74:1, unter der 4,5:1-Schwelle
+     fuer Fliess-Schriftgrad auf dem Abspielen-Knopf und der Zufallskarte.
+     #0f766e ist derselbe Farbton, traegt 5,14:1. */
+  --accent:#0f766e; --accent-ink:#fff;
+  /* #e2523c sah freundlicher aus, trug mit Weiss aber nur 3,81:1 — beim Umbau
+     auf die fröhliche Palette geändert und nicht nachgemessen. #c93d28: 5,02:1. */
+  --warn:#c93d28; --warn-ink:#fff;
+  /* ⛔ KORRIGIERT 12.09.2026. Hier stand `--heart:#c62828` mit der Begruendung
+     "4,18:1". Diese Zahl galt fuer die PASTELLkarten von Entwurf 1 und ist beim
+     Farbtausch stehengeblieben. Auf den satten Toenen nachgemessen (Grund am
+     Herzort abgetastet, der Weiss-Verlauf der Karte liegt darueber):
+         t1 1,56 · t2 1,51 · t3 1,40 · t4 1,25 · t5 1,17 · t6 1,54
+     Sechs von sechs unter der 3:1 aus WCAG 1.4.11 — das Herz war praktisch
+     unauffindbar, und es ist das EINZIGE Zeichen fuer "Liebling".
+     Rot traegt auf diesen Toenen grundsaetzlich nicht. Deshalb weiss gefuellt
+     (3,61-4,82:1) PLUS dunkle Kontur, damit es auf den hellen Toenen (t1/t6)
+     nicht im Verlauf verschwindet. Die Kontur traegt die Form, nicht die Farbe. */
+  --heart:#ffffff;
+  /* Sechs Kartenfarben + eine Schriftfarbe, die auf allen sechs traegt. */
+  /* Satt, mit weissem Text nachgemessen: 4,68 bis 7,34:1 */
+  --t1:#cf4413; --t2:#0b7a6d; --t3:#1565c0; --t4:#c2185b; --t5:#6a3ab2; --t6:#2e7d32;
+  --tink:#ffffff;
+  /* Schriftgroesse ist einstellbar (Einstellungen in der Bibliothek). Der
+     Faktor wirkt auf alle drei Stufen gleichzeitig, damit die Hierarchie
+     erhalten bleibt. */
+  --fs-scale:1;
+  --fs-big:calc(22px * var(--fs-scale)); --fs-mid:calc(17px * var(--fs-scale));
+  --fs-small:calc(15px * var(--fs-scale));
+  --f-display:'Baloo', ui-rounded, system-ui, sans-serif;   /* Namen, Knoepfe */
+  --f-body:'Nunito', ui-rounded, system-ui, sans-serif;      /* Fliesstext */
+  /* Kinderhaende: quellen.md nennt >= 75 CSS-px (~2 cm) fuer Kinder unter 9;
+     bei 7-mm-Zielen verfehlen 7- bis 10-Jaehrige fast 30 % der Versuche.
+     Die 44/64 px der Plattform-Konventionen sind Erwachsenenmasse. */
+  --tap:76px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#1b2340; --bg2:#151b33;
+         --card:#252e4d; --ink:#eef2fb; --ink2:#a9b6d2;
+         --line:#37426a; --line-strong:#7b88b0;
+         --accent:#2dd4bf; --accent-ink:#06201a;
+         --warn:#ff7a5e; --warn-ink:#2b0f06; --heart:#ff9b82;
+         --t1:#5e4d1c; --t2:#1f5244; --t3:#1e3f66; --t4:#5b2b41; --t5:#3c3169; --t6:#63391f;
+         --tink:#f4f7fd;
+         /* ⛔ ERGAENZT 12.09.2026: Diese beiden Tokens fehlten hier. Das helle
+            Braun #7a4a1f des Tagmodus trug gegen die gedeckten Dunkelkarten nur
+            1,11-1,54:1 — gegen --t6 (#63391f, selbst braun) 1,32:1. Die braune
+            t6-Karte verschmolz mit ihrem eigenen Regalbrett. Dunkler als jede
+            Karte, damit das Brett wieder DARUNTER liegt statt daneben. */
+         --brett:#3a2513; --brett-kante:#24160b; }
+  /* Im Dunkelmodus ist das Herz hell (#ff9b82) — eine dunkle Kontur wuerde es
+     hier schwaechen statt stuetzen. Sie ist nur fuer die satten Hellkarten da. */
+  .card .fav{ -webkit-text-stroke:0; text-shadow:none }
+}
+*{box-sizing:border-box}
+/* Wer Bewegung abbestellt hat, bekommt keine. Gilt fuer ALLES — auch fuer die
+   Animationen, die per JS (Web Animations API) laufen; die fragen zusaetzlich
+   selbst nach. Ohne diesen Block ist jede Belebung ein Barrierefreiheitsfehler.
+   animation-delay muss mit: sonst bleiben Karten mit backwards-Startzustand
+   waehrend der Einzugs-Staffelung bis 120 ms unsichtbar. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important; animation-delay:0ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important; scroll-behavior:auto!important;
+  }
+}
+html{scroll-padding-bottom:120px}
+html,body{margin:0;padding:0;overflow-x:hidden}
+body{
+  background:var(--bg);
+  /* Gegen "zu leer": zwei Punktraster ueber dem Verlauf — von weitem Textur,
+     von nahem Konfetti. Kostet keine Bilddatei. */
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.16) 0 2.5px, transparent 3px),
+    radial-gradient(circle at 62% 38%, rgba(255,214,120,.20) 0 2px, transparent 2.5px),
+    linear-gradient(170deg, var(--bg) 0%, var(--bg2) 100%);
+  background-size:78px 78px, 53px 53px, 100% 100%;
+  background-attachment:fixed;
+  color:var(--ink);
+  font:400 var(--fs-mid)/1.45 var(--f-body);
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+}
+button{font:inherit;color:inherit;font-family:inherit}
+
+/* ---------- Browser-Kompatibilitäts-Hinweis -------------------------------- */
+.browser-notice{
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  padding:10px 12px; font-size:var(--fs-mid);
+  background:var(--warn); color:var(--warn-ink);
+  display:flex; align-items:center; gap:10px; justify-content:center;
+  border-bottom:1px solid var(--warn);
+  box-shadow:0 2px 4px rgba(0,0,0,.15);
+  overflow:hidden;
+}
+.browser-notice a{ color:var(--accent-ink); text-decoration:underline }
+.browser-notice button{
+  margin-left:auto; flex:0 0 auto;
+  background:none; border:none; font-size:var(--fs-big);
+  cursor:pointer; color:inherit; opacity:.7;
+}
+.browser-notice button:hover{ opacity:1 }
+
+/* Lauftext für lange Meldungen */
+.browser-notice .marquee{
+  display:inline-block;
+  white-space:nowrap;
+  animation: marquee 15s linear infinite;
+  padding-left:100%;
+}
+@keyframes marquee{
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Reduzierte Bewegung für Nutzer die es bevorzugen */
+@media (prefers-reduced-motion: reduce) {
+  .browser-notice .marquee{
+    animation:none;
+    display:inline;
+    padding-left:0;
+  }
+}
+
+/* ---------- Kopf: klein, damit die Bilder die Fläche bekommen ---------- */
+header{
+  position:sticky; top:0; z-index:20; background:rgba(0,0,0,.28);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);
+  padding:8px 10px; padding-top:calc(8px + env(safe-area-inset-top));
+  display:flex; align-items:center; gap:10px;
+}
+#back{
+  flex:0 0 auto; width:var(--tap); height:var(--tap);
+  border:2px solid var(--line-strong); background:var(--card); border-radius:18px;
+  font-size:30px; line-height:1; cursor:pointer; display:none;
+  align-items:center; justify-content:center;
+}
+#back.on{display:flex}
+/* Das Kind soll oben SEHEN, wo es ist, nicht lesen. Im Regal steht hier die
+   Figur, die ganz oben liegt; in einer Serie deren eigene Figur. Der Schriftzug
+   bleibt daneben — fuer Erwachsene und fuer Screenreader —, tritt aber zurueck. */
+#kopfbild{
+  flex:0 0 auto; width:var(--tap); height:var(--tap);
+  object-fit:contain; display:block;
+  filter:drop-shadow(0 3px 4px rgba(34,48,77,.30));
+}
+#kopfbild[hidden]{ display:none }
+body[data-mode="kid"] #title{
+  font-size:var(--fs-mid); font-weight:700; opacity:.8;
+}
+#title{
+  flex:1; min-width:0; font-family:var(--f-display);
+  font-size:var(--fs-big); font-weight:800;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  cursor:default; user-select:none; -webkit-user-select:none;
+}
+/* Funkzustand als FORM, nicht als Farbe (Graustufen-Prüfung): gefüllter Kreis
+   = verbunden, Ring = nicht verbunden. */
+#link{
+  flex:0 0 auto; width:var(--tap); height:var(--tap);
+  border:0; background:transparent; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+#link i{
+  display:block; width:26px; height:26px; border-radius:50%;
+  border:4px solid var(--ink2); background:transparent;
+}
+#link.on i{ border-color:var(--accent); background:var(--accent); }
+
+/* ---------- Das Regal ---------- */
+main{padding:12px 12px 40px; max-width:900px; margin:0 auto}
+.shelf{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:34px 12px;                 /* Luft nach unten fuers Brett */
+  position:relative;
+}
+/* Das Regalbrett gehoert an die KARTE, nicht ans Raster. Ein wiederholter
+   Verlauf auf dem Grid trifft nur bei streng gleichen Zeilenhoehen — die
+   Heldkarte ist niedriger, und schon wanderte das Brett quer durchs Bild.
+   Als Pseudoelement der Karte folgt es jeder Hoehe von selbst. */
+.card::after{
+  content:''; position:absolute; left:-7px; right:-7px; bottom:-15px; height:11px;
+  background:var(--brett); border-radius:3px;
+  box-shadow:0 4px 0 var(--brett-kante), 0 8px 12px -4px rgba(0,0,0,.55);
+  z-index:-1;
+}
+/* z-index:-1 wirkt nur, wenn die Karte einen eigenen Stapelkontext hat —
+   sonst faellt das Brett hinter den Seitenhintergrund. */
+.card{ isolation:isolate }
+.shelf > *{ position:relative }
+@media (min-width:620px){ .shelf{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (min-width:900px){ .shelf{grid-template-columns:repeat(4,minmax(0,1fr))} }
+
+.card{
+  position:relative;
+  /* Die Figur ragt oben heraus — dadurch steht sie IM Regal statt in einer
+     Kachel zu kleben. Verlangt overflow:visible und Platz nach oben. */
+  overflow:visible;
+  padding-top:26px !important;
+  /* Leichter Verlauf + harte Unterlippe: die Karte soll ein GEGENSTAND sein,
+     auf dem die Figur steht, keine Farbfläche, in der sie schwebt. */
+  background:
+    linear-gradient(175deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 62%),
+    var(--tint,var(--card));
+  color:var(--tink);
+  border:3px solid rgba(255,255,255,.28); border-radius:24px;
+  box-shadow:0 5px 0 rgba(0,0,0,.35), 0 14px 22px -8px rgba(0,0,0,.5);
+  padding:8px 8px 12px; cursor:pointer; text-align:center;
+  min-height:170px; display:flex; flex-direction:column; gap:4px;
+  /* Asymmetrisch: hart rein, federnd raus. Ein symmetrisches Zurückgleiten
+     fühlt sich tot an — das Zurückfedern ist das, was "es hat reagiert" sagt. */
+  transition:transform .24s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+}
+.card:active{
+  transform:translateY(4px) scale(.955);
+  box-shadow:0 0 0 rgba(34,48,77,.13), 0 3px 8px -2px rgba(34,48,77,.18);
+  transition-duration:.09s;          /* runter muss unter 100 ms bleiben */
+}
+/* ⛔ KORRIGIERT 12.09.2026: hier stand `var(--accent)` (#0f766e). Das traegt
+   gegen die satten Karten 1,05-1,34:1 und gegen den Seitengrund 2,47:1 — der
+   Tastaturfokus war unsichtbar (WCAG 2.4.11, Soll 3:1). In Entwurf 1 waren es
+   4,45-4,91:1; die Regel wurde beim Farbtausch nicht nachgemessen.
+   Weiss traegt auf allen sechs Toenen (4,68-17,14:1). */
+.card:focus-visible{ outline:4px solid #fff; outline-offset:3px }
+.card.t1{--tint:var(--t1)} .card.t2{--tint:var(--t2)} .card.t3{--tint:var(--t3)}
+.card.t4{--tint:var(--t4)} .card.t5{--tint:var(--t5)} .card.t6{--tint:var(--t6)}
+
+/* Der Blickanker. Ein gleichförmiges Raster aus 260 gleich grossen Kacheln hat
+   keinen Einstieg — das Auge findet nichts, woran es hängenbleibt. Genau EINE
+   Karte ist gross (Deckelung: hoechstens zwei grosse Elemente je Ansicht), und
+   sie ist es aus einem echten Grund: meistgehoert oder Liebling. */
+.card.held{
+  grid-column:1/-1; min-height:0;
+  flex-direction:row; align-items:center; text-align:left;
+  gap:16px; padding:14px 18px 14px 14px;
+}
+.card.held .pic{ width:158px; flex:0 0 158px; aspect-ratio:1/1 }
+.card.held .txt{ min-width:0 }
+.card.held .nm{ font-size:var(--fs-big); -webkit-line-clamp:3 }
+.card.held .cnt{ text-align:left }
+.card.held .fav{ top:10px; left:auto; right:14px }
+
+/* Die Ueberraschungskarte: einziges Feld in der Akzentfarbe. Pop-out entsteht
+   aus Einzigartigkeit in EINER Dimension — hier Farbe. Deshalb darf es genau
+   diese eine geben. */
+.card.zufall{
+  --tint:var(--accent); color:var(--accent-ink);
+  background:linear-gradient(175deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 60%), var(--accent);
+}
+/* ⛔ KORRIGIERT 12.09.2026: Die Zufallskarte hat kein `.pic`, also nichts, was
+   das `padding-top:26px` der Karte per negativem `margin-top` zurueckholt. Der
+   Wuerfel begann dadurch 30 px tiefer als die Figuren derselben Rasterzeile —
+   sichtbar als schiefe Reihe. Das Polster hier zuruecknehmen. */
+.card.zufall{ padding-top:8px }
+.card.zufall .wuerfel{ font-size:56px; line-height:1.1 }
+.card.zufall .nm{ color:var(--accent-ink) }
+.card.zufall .cnt{ color:var(--accent-ink); opacity:.85 }
+/* Die Figur STEHT auf der Karte, statt daraufgedruckt zu sein: Schlagschatten
+   am Motiv plus eine Kontaktellipse darunter. Das ist die Metapher, die das
+   Kind vom echten Tonie auf der Box kennt — und der groesste sichtbare
+   Unterschied fuer die wenigsten Zeilen. */
+.card .pic{
+  margin-top:-30px;              /* Ueberstand */
+  width:100%; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+  position:relative; overflow:visible;
+}
+.card img{
+  width:100%; height:100%; object-fit:contain; display:block;
+  position:relative; z-index:1;
+  filter:drop-shadow(0 7px 5px rgba(34,48,77,.30));
+}
+.card .pic::after{
+  content:''; position:absolute; z-index:0;
+  left:50%; translate:-50% 0; bottom:4px; width:58%; height:9px;
+  background:radial-gradient(closest-side, rgba(34,48,77,.24), transparent);
+  transition:transform .09s cubic-bezier(.3,0,.8,.15);
+}
+/* Beim Druck schrumpft der Schatten mit — daraus wird aus "Kachel wird kleiner"
+   ein "Figur wird heruntergedrueckt". */
+.card:active .pic::after{ transform:scaleX(.84) scaleY(.7) }
+@media (prefers-color-scheme: dark){
+  .card img{ filter:drop-shadow(0 7px 6px rgba(0,0,0,.5)) }
+  .card .pic::after{ background:radial-gradient(closest-side, rgba(0,0,0,.45), transparent) }
+}
+.card .nm{
+  font-family:var(--f-display); font-size:var(--fs-mid); font-weight:800; line-height:1.2;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  /* Deutsche Komposita brauchen beides: hyphens:auto trennt nach Sprechsilben
+     (Ad-vents-ka-len-der), und overflow-wrap faengt die Faelle ab, in denen der
+     Browser keine Trennstelle findet. Ohne das Zweite laeuft ein langes Wort
+     ungebrochen aus der Kachel heraus — nachgemessen bei "Adventskalender".
+     NICHT word-break:break-all, das bricht auch dort, wo es nicht noetig ist. */
+  hyphens:auto;
+  overflow-wrap:break-word;
+}
+/* NICHT --ink2: das ergab auf den Karten nur 3,84-4,19:1 und fiel damit durch
+   (WCAG 1.4.3 verlangt 4,5:1). Dieselbe Tinte wie der Name, nur etwas leiser
+   ⛔ KORRIGIERT 12.09.2026: Die Zahl "6,04-7,73:1" war der Wert aus Entwurf 1
+   und ist beim Farbtausch stehengeblieben. Auf den satten Toenen mit .88
+   nachgemessen: t1 3,96 · t2 4,43 · t6 4,36 — drei von sechs unter 4,5:1.
+   Die noetige Deckkraft waere t1 0,98 — damit traegt `opacity` hier nicht mehr.
+   Deshalb ohne Deckkraft (4,68-7,34:1, wie --tink); die Unterordnung tragen
+   jetzt Schriftgrad und Schnitt allein. Das ist ohnehin robuster: Deckkraft
+   rechnet gegen einen Grund, den man beim naechsten Farbtausch wieder
+   vergisst nachzumessen. */
+.card .cnt{font-size:var(--fs-small); color:var(--tink); font-weight:600}
+/* GROSSBUCHSTABEN nur fuer NAMEN, ausdruecklich nicht fuer den Inhaltstext:
+   Versalsatz im Fliesstext liest sich nachweislich schlechter, bei kurzen
+   Namen ist der Effekt umgekehrt. */
+body[data-upper="1"] .card .nm,
+body[data-upper="1"] #stage .nm,
+body[data-upper="1"] #title,
+body[data-upper="1"] .row .t{ text-transform:uppercase; letter-spacing:.01em }
+/* Ersatzzeichen fuer die 7 Folgen ohne Bild. ⛔ KORRIGIERT 12.09.2026: mit
+   `opacity:.55` waren es 2,39-3,36:1 — fuenf von sechs unter der 3:1 fuer
+   Nicht-Text. Mit .78 traegt t1 3,10:1, der schlechteste Fall. */
+.card .noimg{font-size:34px; color:var(--tink); opacity:.78}
+
+/* Der schwerste Bedienfehler, den die Zahlen nicht zeigen: 163 der 260 Serien
+   haben genau EINE Folge und spielen sofort los, 97 öffnen ein Untermenü. Der
+   einzige Hinweis darauf war bisher die Textzeile "52 Folgen" — für ein Kind,
+   das nicht liest, unsichtbar. Ein sichtbarer Kartenstapel sagt es ohne ein
+   Wort: hier liegt mehr als eins drin. */
+/* Bewusst OHNE negativen z-index: .card ist position:relative ohne eigenen
+   Stapelwert, ein z-index:-1 verschwände hinter dem Kartenhintergrund. Der
+   Streifen liegt deshalb vollständig ÜBER der Kartenkante — keine Überlappung,
+   kein Stapelkontext-Problem. */
+/* Der Streifen ist das einzige textfreie Zeichen fuer "mehrere Folgen".
+   `filter:brightness(.93)` allein trug nur 1,23:1 gegen den Seitenhintergrund
+   — praktisch unsichtbar. Die inset-shadow-Linie zieht eine harte Kante zur
+   Kartenoberkante und macht den Stapel als Stapel erkennbar. */
+.card.stapel::before{
+  content:''; position:absolute;
+  left:11px; right:11px; top:-9px; height:9px;
+  border-radius:12px 12px 0 0;
+  background:var(--tint,var(--card));
+  filter:brightness(.82);
+  box-shadow:0 -2px 0 rgba(34,48,77,.30) inset;
+}
+.card.stapel{ margin-top:9px }
+/* Lieblings-Marke: reine Anzeige, KEIN eigenes Ziel — gesetzt wird sie durch
+   langes Druecken auf die ganze Karte (dieselbe Geste wie langes OK am
+   Flipper). Deshalb ohne Flaeche und ohne Rand: nichts soll anfassbar
+   aussehen, was fuer sich genommen nicht anfassbar ist. */
+.card .fav{
+  position:absolute; top:8px; left:10px; font-size:24px; line-height:1;
+  color:var(--heart); pointer-events:none;
+  /* Die Kontur ist NICHT Schmuck: sie traegt die Sichtbarkeit auf den hellen
+     Toenen (t1 #cf4413, t6 #2e7d32), wo weiss allein nur 3,6:1 erreicht.
+     Zwei Wege, weil `text-stroke` ausserhalb WebKit/Blink nicht greift —
+     `text-shadow` deckt den Rest ab. Siehe --heart oben. */
+  -webkit-text-stroke:1.5px rgba(0,0,0,.55);
+  text-shadow:0 1px 2px rgba(0,0,0,.45);
+}
+.card.rein{ animation:kartenEinzug .34s cubic-bezier(.2,1.3,.4,1) backwards }
+@keyframes kartenEinzug{ from{ opacity:0; transform:translateY(26px) scale(.9) } }
+/* Lieblinge wippen sehr langsam und sehr wenig — nur sie, damit das Regal nicht
+   flimmert. Wer Bewegung abbestellt hat, bekommt keine (Block ganz oben). */
+@media (prefers-reduced-motion: no-preference){
+  /* ⛔ KORRIGIERT 12.09.2026: Diese Regel war TOT und im Anschlussfall falsch.
+     `hatherz` kam in der ganzen Datei genau einmal vor — hier. Das JS setzt die
+     Klasse nie (gemessen: `.card.hatherz` = 0 Treffer, `pic_animation:"none"`
+     auch auf Karten mit Herz). Und haette sie gegriffen, waere das Ergebnis
+     falsch gewesen: `translateY(-30px)` ADDIERT sich auf das bestehende
+     `margin-top:-30px` von `.pic` und haette die Figur um 30 px hochgerissen.
+     Jetzt relativ (0 -> -4px), und die Klasse wird in cardFor() gesetzt. */
+  .card.fav-an .pic{ animation:wippen 3.6s ease-in-out infinite alternate }
+  @keyframes wippen{ from{transform:translateY(0) rotate(-1.5deg)}
+                       to{transform:translateY(-4px) rotate(1.5deg)} }
+}
+/* --ink statt --ink2: der Trenner steht direkt auf dem Seitenverlauf, und
+   ⚠️ Die Begruendung hier war falsch: "--bg2 gegen --ink2 traegt nur 4,28:1"
+   stammt aus Entwurf 1. Gemessen 12.09.2026: 10,17:1. Die Regel schadet
+   nicht und bleibt, aber sie ist nicht mehr noetig — wer hier aufraeumt,
+   darf --ink2 nehmen. (Der Querverweis "Zeile 257" zeigte ins Leere.) */
+.shelfsep{
+  grid-column:1/-1; font-size:var(--fs-small); color:var(--ink); opacity:.72;
+  padding:10px 2px 2px; border-top:2px solid var(--line); margin-top:6px;
+}
+
+/* ---------- „Läuft gerade" — Vollbild, ein einziges Ziel ---------- */
+#stage{
+  position:fixed; inset:0; z-index:50;
+  background:var(--tint,var(--bg)); color:var(--tink);
+  display:none; flex-direction:column; align-items:center;
+  padding:calc(10px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom));
+}
+#stage.on{display:flex}
+#stage.t1{--tint:var(--t1)} #stage.t2{--tint:var(--t2)} #stage.t3{--tint:var(--t3)}
+#stage.t4{--tint:var(--t4)} #stage.t5{--tint:var(--t5)} #stage.t6{--tint:var(--t6)}
+/* ⛔ KORRIGIERT 12.09.2026: hier stand `opacity:.75`. Auf den satten Toenen
+   nachgemessen: 3,26-4,90:1, fuenf von sechs unter 4,5:1. `.st` traegt den
+   Verbindungszustand ("Dieser Browser kann kein Bluetooth…") bei 15 px — das
+   ist die Zeile, die im Zweifel gelesen werden MUSS. Noetige Deckkraft waere
+   t1 0,98. Deshalb ohne Deckkraft; Unterordnung ueber Grad und Schnitt. */
+#stage .sr,#stage .st{color:var(--tink); font-weight:600}
+#stage .pic{flex:0 1 auto; min-height:96px; max-height:34vh;
+  display:flex; align-items:center; justify-content:center; width:100%}
+#stage img{max-width:100%; max-height:100%; object-fit:contain;
+  filter:drop-shadow(0 8px 10px rgba(34,48,77,.28))}
+/* Der Inhaltstext der Folge. Vorher war unter dem Bild nichts — die Bühne wirkte
+   leer, und wer wissen wollte, worum es geht, musste in die Bibliothek wechseln. */
+/* Vorlesen: fuer ein Kind, das nicht liest, ist die Beschreibung sonst
+   blosse Dekoration. Der Knopf steht direkt am Text, nicht bei den
+   Abspielknoepfen — er gehoert zum Lesen, nicht zum Abspielen. */
+#stage .descwrap{
+  display:flex; gap:10px; align-items:flex-start;
+  width:100%; max-width:520px; flex:1 1 auto; min-height:0; margin:10px 0 4px;
+}
+.vorlesen{
+  flex:0 0 auto; width:var(--tap); height:var(--tap);
+  border:2px solid currentColor; border-radius:18px; background:transparent;
+  color:inherit; font-size:26px; line-height:1; cursor:pointer; opacity:.75;
+}
+.vorlesen[aria-pressed="true"]{ background:currentColor; opacity:1 }
+.vorlesen[aria-pressed="true"]::before{ content:'■'; }
+.vorlesen[aria-pressed="true"]{ color:var(--tink); }
+.vorlesen[hidden]{ display:none }
+#stage .desc{
+  font-family:var(--f-body); font-size:var(--fs-mid); line-height:1.5;
+  text-align:left; width:100%; max-width:520px;
+  flex:1 1 auto; min-height:0; overflow-y:auto; padding-right:4px;
+  -webkit-overflow-scrolling:touch;
+}
+#stage .desc ul{margin:6px 0 0; padding-left:20px}
+#stage .desc li{margin:2px 0}
+/* opacity .78 statt .7: sonst fallen zwei der sechs Kartentoene unter 4,5:1.
+   Die Kursivstellung traegt die Unterscheidung ohnehin. */
+/* ⛔ KORRIGIERT 12.09.2026: `opacity:.78` ergab 3,41-5,16:1 (5 von 6 unter
+   4,5). Die Kursivstellung unterscheidet diese Zeile ohnehin — die Deckkraft
+   trug nichts bei, ausser Kontrastverlust. */
+#stage .desc .leer{font-style:italic}
+#stage .desc::-webkit-scrollbar{width:6px}
+#stage .desc::-webkit-scrollbar-thumb{background:currentColor; opacity:.25; border-radius:3px}
+/* Zurück: die Bühne spielt nicht mehr von selbst los, also muss man auch wieder
+   herauskommen, ohne etwas zu stoppen. */
+#stageback{
+  /* z-index PFLICHT: #stage img traegt filter:drop-shadow, und ein `filter`
+     erzeugt einen Stapelkontext. Das Bild wird dadurch wie ein positioniertes
+     Element gemalt und liegt in Baumreihenfolge NACH diesem Knopf — gemessen
+     waren 52 % der Knopfflaeche tot. */
+  z-index:2;
+  position:absolute; left:10px; top:calc(10px + env(safe-area-inset-top));
+  width:var(--tap); height:var(--tap);
+  border:0; border-radius:20px; background:rgba(255,255,255,.34); color:inherit;
+  font-size:30px; line-height:1; cursor:pointer;
+}
+@media (prefers-color-scheme: dark){ #stageback{background:rgba(255,255,255,.14)} }
+#stage .nm{font-family:var(--f-display); font-size:var(--fs-big); font-weight:800; text-align:center; margin:10px 0 2px;
+  /* Deutsche Komposita brauchen BEIDE: hyphens teilt, overflow-wrap bricht
+     auch dort, wo hyphens keine Trennstelle vorschlaegt. */
+  hyphens:auto; overflow-wrap:break-word}
+/* Farbe kommt aus Zeile 281 (--tink), damit der Kontrast auf jeder Tint-
+   Karte >= 4,5:1 haelt. --ink2 (fuer weisse Karten gedacht) wuerde hier
+   zusammen mit opacity .75 auf 2,59:1 fallen.
+   ⚠️ Auch dieser Wert ist Entwurf 1. Die Deckkraft an dieser Stelle ist
+   inzwischen entfernt (s. #stage .sr/.st) — der Satz beschreibt eine
+   Konstruktion, die es nicht mehr gibt. */
+#stage .sr{font-size:var(--fs-mid); text-align:center; margin-bottom:4px}
+#stage .st{font-size:var(--fs-small); text-align:center; margin-bottom:12px;
+  min-height:1.4em}
+.act{
+  width:100%; max-width:460px; min-height:88px; border:0; border-radius:22px;
+  font-family:var(--f-display); font-size:26px; font-weight:800; cursor:pointer;
+  display:none; align-items:center; justify-content:center; gap:12px;
+  transition:transform .08s ease, opacity .12s ease;
+  flex:0 0 auto;
+}
+.act.on{display:flex}
+.act:active{transform:scale(.96)}
+.act.go{background:var(--accent); color:var(--accent-ink)}
+.act.halt{background:var(--warn); color:var(--warn-ink)}
+/* Der Weg aus der Sackgasse. Die Buehne liegt ueber der Kopfleiste, der
+   Funkpunkt dort ist also unerreichbar — der Hinweis "oben rechts tippen"
+   zeigte auf einen verdeckten Knopf. Deshalb hier ein eigener Weg.
+   Der Abspielknopf bleibt daneben sichtbar und ausgegraut: so ist erkennbar,
+   was normalerweise geht und warum es gerade nicht geht. */
+.act.link{
+  background:transparent; color:inherit;
+  border:3px solid currentColor; min-height:64px; font-size:19px;
+  margin-bottom:10px; opacity:.85;
+}
+/* Ohne Flipper ist nichts abzuspielen. Ausgegraut sagt das ohne Text — und der
+   Knopf bleibt sichtbar, damit klar ist, was hier normalerweise geht. */
+.act:disabled{opacity:.38; cursor:default}
+.act:disabled:active{transform:none}
+/* Das Zeichen im Knopf: Dreieck bzw. Quadrat als reine Form, damit die Bedeutung
+   nicht allein an der Farbe haengt (Graustufen- und Rot-Gruen-Pruefung). */
+.act .sym{
+  width:0; height:0; flex:0 0 auto;
+  border-left:22px solid currentColor; border-top:14px solid transparent;
+  border-bottom:14px solid transparent; margin-left:4px;
+}
+.act.halt .sym{ width:22px; height:22px; border:0; background:currentColor; border-radius:4px }
+
+/* ---------- Meldung ---------- */
+#msg{
+  position:fixed; left:50%; transform:translateX(-50%); bottom:26px; z-index:60;
+  background:var(--ink); color:var(--bg); padding:14px 20px; border-radius:14px;
+  font-size:var(--fs-mid); max-width:92vw; text-align:center; display:none;
+}
+.empty{color:var(--ink); padding:40px 8px; text-align:center}
+
+/* ===========================================================================
+   Erwachsenen-Bibliothek (verstecktes langes Drücken auf die Überschrift).
+   Hier darf es Text, Suche und Beschreibungen geben — hier liest jemand.
+   =========================================================================== */
+body[data-mode="lib"] .shelf{grid-template-columns:minmax(0,1fr); gap:10px}
+.searchwrap{padding:0 0 12px}
+#q{
+  width:100%; min-height:52px; padding:12px 14px; font-size:var(--fs-mid);
+  border:2px solid var(--line-strong); border-radius:14px; background:var(--card); color:var(--ink);
+}
+.row{
+  background:var(--card); border:2px solid var(--line-strong); border-radius:16px;
+  padding:10px; cursor:pointer; display:flex; gap:12px; align-items:center;
+  text-align:left; width:100%; min-height:var(--tap);
+  transition:transform .08s ease;
+}
+.row:active{transform:scale(.98)}
+.row img{width:64px;height:64px;object-fit:contain;flex:0 0 64px}
+.row .txt{min-width:0;flex:1}
+.row .t{font-weight:700;font-size:var(--fs-mid);line-height:1.3;
+  hyphens:auto; overflow-wrap:break-word}
+.row .s{color:var(--ink2);font-size:var(--fs-small);margin-top:2px}
+.row .d{color:var(--ink2);font-size:var(--fs-small);margin-top:4px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Serienzeile + Lieblings-Knopf. Als Geschwister, nicht verschachtelt:
+   ein <button> im <button> ist ungueltiges HTML. */
+.rowwrap{display:flex; gap:8px; align-items:stretch}
+.rowwrap .row{flex:1; min-width:0}
+.favbtn{
+  flex:0 0 auto; width:56px; min-height:var(--tap);
+  border:2px solid var(--line-strong); border-radius:16px; background:var(--card);
+  font-size:24px; line-height:1; cursor:pointer; color:var(--ink2);
+  transition:transform .08s ease;
+}
+.favbtn:active{transform:scale(.94)}
+/* ⛔ KORRIGIERT 12.09.2026: Der Ein-Zustand unterschied sich NUR durch Farbe
+   (WCAG 1.4.1) — die Glyphe blieb in beiden Faellen `♥`. Dazu trug `--warn`
+   (#c93d28) gegen --card nur 2,16:1 (in Entwurf 1: 5,02:1, beim Farbtausch
+   nicht nachgemessen). Jetzt traegt die FLAECHE den Zustand: gefuellt = an.
+   Das ist auch ohne Farbwahrnehmung erkennbar. */
+.favbtn.on{
+  color:var(--accent-ink); background:var(--accent); border-color:var(--accent);
+  font-weight:800;
+}
+.detail{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:18px}
+.detail img{display:block;margin:0 auto 14px;max-width:220px;width:100%;height:auto}
+.detail h1{font-family:var(--f-display); font-weight:800; font-size:var(--fs-big);line-height:1.25;margin:0 0 4px;
+  hyphens:auto; overflow-wrap:break-word}
+.detail .sub{color:var(--ink2);font-size:var(--fs-mid);margin-bottom:14px}
+.detail .desc{font-size:var(--fs-mid);line-height:1.6;margin:0 0 16px}
+.detail .none{color:var(--ink2);font-style:italic}
+.tracks{margin:0 0 16px;padding-left:22px;color:var(--ink2);font-size:var(--fs-small)}
+.playbig{
+  width:100%;min-height:68px;border:0;border-radius:16px;background:var(--accent);
+  color:var(--accent-ink);font-family:var(--f-display);
+  font-size:var(--fs-big);font-weight:800;cursor:pointer;
+}
+.meta{color:var(--ink2);font-size:var(--fs-small);margin-top:12px;word-break:break-word}
+.einst{background:var(--card); border:2px solid var(--line); border-radius:16px;
+  padding:14px; margin:0 0 12px}
+.einst h3{margin:0 0 10px; font-family:var(--f-display); font-size:var(--fs-mid)}
+.einst .reihe{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+.einst button{
+  min-height:var(--tap); min-width:var(--tap); padding:0 16px;
+  border:2px solid var(--line); border-radius:14px; background:transparent;
+  cursor:pointer; font-weight:700;
+}
+.einst button[aria-pressed="true"]{
+  border-color:var(--accent); background:var(--accent); color:var(--accent-ink);
+}
+/* --ink statt --ink2: die Zeile steht direkt auf dem Seitenverlauf, dessen
+   untere Farbe --bg2 traegt gegen --ink2 nur 4,28:1 — Fliesstext braucht 4,5.
+   ⚠️ Entwurf-1-Wert, gemessen sind es 10,17:1. Siehe oben. */
+.libhint{font-size:var(--fs-small);color:var(--ink);opacity:.72;margin:0 0 12px}
+</style>
+<!-- OpenTonies Bridge Support für iOS (optional) -->
+<script src="opentonies_bridge.js"></script>
+</head>
+<body data-mode="kid">
+
+<!-- Browser-Kompatibilitäts-Hinweis -->
+<div id="browser-notice" class="browser-notice" aria-live="polite" role="status" hidden>
+  <span id="browser-notice-text"></span>
+  <button id="browser-notice-close" style="min-width:76px;min-height:76px;font-size:34px;flex:none" aria-label="Schließen" onclick="this.parentElement.hidden=true">×</button>
+</div>
+
+<header>
+  <button id="back" aria-label="Zurück">←</button>
+  <img id="kopfbild" alt="" hidden>
+  <h1 id="title" tabindex="0">Meine Geschichten</h1>
+  <button id="link" aria-label="Mit dem Flipper verbinden"><i></i></button>
+</header>
+
+<main id="view"></main>
+
+<div id="stage" role="dialog" aria-modal="true" aria-labelledby="stagenm">
+  <button id="stageback" aria-label="Zurück">←</button>
+  <div class="pic"><img id="stageimg" alt=""></div>
+  <div class="nm" id="stagenm"></div>
+  <div class="sr" id="stagesr"></div>
+  <div class="descwrap">
+    <button id="vorlesen" class="vorlesen" aria-label="Beschreibung vorlesen">🔊</button>
+    <div class="desc" id="stagedesc"></div>
+  </div>
+  <div class="st" id="stagest" role="status" aria-live="polite"></div>
+  <button id="stagelink" class="act link">Mit dem Flipper verbinden</button>
+  <button id="go" class="act go"><span class="sym"></span>Abspielen</button>
+  <button id="halt" class="act halt"><span class="sym"></span>Stopp</button>
+</div>
+
+<div id="msg" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   Flipper-Serial über BLE.
+   Achtung, leicht zu verwechseln: 19ed82ae-…61fe0000 ist NICHT der Service,
+   sondern die RX-Characteristic. Der Service ist 8fe5b3d5-…
+   ========================================================================= */
+const SERVICE='8fe5b3d5-2e7f-4a98-2a48-7acc60fe0000';
+const CH_TX ='19ed82ae-ed21-4c9d-4145-228e62fe0000';
+const CH_RX ='19ed82ae-ed21-4c9d-4145-228e61fe0000';
+const CHUNK=180;
+
+let dev=null,txCh=null,rxCh=null,connected=false,rxBuf='';
+const waiters=[];
+
+const $=s=>document.querySelector(s);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+let msgTimer=null;
+function say(t,ms=2800){
+  const m=$('#msg'); m.textContent=t; m.style.display='block';
+  clearTimeout(msgTimer); msgTimer=setTimeout(()=>m.style.display='none',ms);
+}
+
+function onNotify(ev){
+  rxBuf+=new TextDecoder().decode(ev.target.value);
+  let i;
+  while((i=rxBuf.indexOf('\n'))>=0){
+    const line=rxBuf.slice(0,i).replace(/\r$/,''); rxBuf=rxBuf.slice(i+1);
+    if(!line) continue;
+    // Von vorne: Antworten kommen in der Reihenfolge der Anfragen, also gehoert
+    // die naechste Antwort dem AELTESTEN passenden Warter — sonst faengt ein
+    // spaeterer Warter das generische "ERR ..." des Geraets ab und der eigentlich
+    // gemeinte hier verhungert im Zeitablauf.
+    for(let k=0;k<waiters.length;k++){
+      if(waiters[k].match(line)){waiters[k].resolve(line);waiters.splice(k,1);break;}
+    }
+  }
+}
+
+function setLink(){
+  const l=$('#link');
+  l.classList.toggle('on',connected);
+  // aria-pressed + der jeweilige Name — sonst heisst der Knopf immer
+  // "Mit dem Flipper verbinden", auch wenn ein Druck jetzt trennt.
+  l.setAttribute('aria-pressed', connected?'true':'false');
+  l.setAttribute('aria-label',
+    connected?'Flipper verbunden — tippen zum Trennen':'Mit dem Flipper verbinden');
+  if(STAGE_IT) zeigeAktion();    // ausgegraut/aktiv sofort nachfuehren
+}
+
+async function connect(){
+  if(!navigator.bluetooth){
+    say('Dieser Browser kann kein Bluetooth. Auf dem iPhone geht Safari hier nicht.',6000);
+    return false;
+  }
+  try{
+    dev=await navigator.bluetooth.requestDevice({
+      filters:[{services:[SERVICE]},{namePrefix:'Flipper'}],
+      optionalServices:[SERVICE]
+    });
+    dev.addEventListener('gattserverdisconnected',()=>{
+      // playing muss mit: sonst zeigt die Buehne nach dem Wiederverbinden
+      // einen aktiven Stopp-Knopf fuer eine Folge, die gar nicht mehr laeuft.
+      // rxBuf leeren, sonst wird der erste Satz nach dem Wiederverbinden mit
+      // dem Rest der letzten Zeile verklebt (PING kommt dann nicht durch).
+      connected=false;txCh=rxCh=null;playing=null;rxBuf='';waiters.length=0;
+      setLink();
+    });
+    const server=await dev.gatt.connect();
+    const svc=await server.getPrimaryService(SERVICE);
+    txCh=await svc.getCharacteristic(CH_TX);
+    rxCh=await svc.getCharacteristic(CH_RX);
+    await rxCh.startNotifications();
+    rxCh.addEventListener('characteristicvaluechanged',onNotify);
+    connected=true; setLink();
+    const pong=await send('PING',l=>l.startsWith('PONG')||l.startsWith('ERR'),2500);
+    if(!pong||!pong.startsWith('PONG'))
+      say('Verbunden — aber die OpenTonies-App antwortet nicht. Läuft sie auf dem Flipper?',6000);
+    else pullFavs();                    // Lieblinge vom Gerät uebernehmen
+    return true;
+  }catch(e){
+    connected=false;txCh=rxCh=null;setLink();
+    if(e&&e.name==='NotFoundError') return false;      // Dialog abgebrochen: kein Lärm
+    say('Verbinden hat nicht geklappt.',4000);
+    return false;
+  }
+}
+
+async function send(cmd,match=null,timeout=4000){
+  if(!connected||!txCh) throw new Error('nicht verbunden');
+  const p=match?new Promise(res=>{
+    const w={match,resolve:res}; waiters.push(w);
+    setTimeout(()=>{const i=waiters.indexOf(w);if(i>=0){waiters.splice(i,1);res(null);}},timeout);
+  }):null;
+  const data=new TextEncoder().encode(cmd+'\n');
+  for(let o=0;o<data.length;o+=CHUNK) await txCh.writeValue(data.slice(o,o+CHUNK));
+  return p?await p:null;
+}
+
+/* =========================================================================
+   Daten
+   ========================================================================= */
+let LIB={items:[]};
+let SERIES=new Map();          // Serienname -> Folgen[]
+let BY_THEME=new Map();        // nur für die Bibliotheksansicht
+let playing=null;
+let STAGE_IT=null;   // die Folge, die die Buehne gerade zeigt
+
+/* Wie oft wurde eine Serie gespielt? Damit wandern die Lieblinge von selbst
+   nach vorne — ohne dass ein Kind irgendetwas markieren muss. */
+const COUNTS=(()=>{ try{return JSON.parse(localStorage.getItem('tk_counts')||'{}');}catch(e){return {};} })();
+function bump(series){
+  COUNTS[series]=(COUNTS[series]||0)+1;
+  try{localStorage.setItem('tk_counts',JSON.stringify(COUNTS));}catch(e){}
+}
+
+/* Lieblinge. Gesetzt werden sie in der Bibliothek von einem Erwachsenen, wirksam
+   sind sie im Kinderregal: 260 Serien sind zum Durchscrollen zu viel, eine
+   Handvoll Lieblinge ganz oben loest genau das. */
+const FAVS=(()=>{ try{return new Set(JSON.parse(localStorage.getItem('tk_favs')||'[]'));}catch(e){return new Set();} })();
+
+/* Lieblinge setzen — und, wenn der Flipper dranhaengt, dort gleich mit.
+   Das Gerät fuehrt dieselbe Liste (favorites.txt, am Flipper per langem OK
+   gesetzt); beide Seiten sollen dasselbe zeigen. */
+function setFav(series, on){
+  on?FAVS.add(series):FAVS.delete(series);
+  resetOrder();                       // bewusste Handlung -> Regal darf sich ordnen
+  try{localStorage.setItem('tk_favs',JSON.stringify([...FAVS]));}catch(e){}
+  if(connected){
+    send((on?'FAV+ ':'FAV- ')+series, l=>l.startsWith('OK FAV')||l.startsWith('ERR'), 3000)
+      .catch(()=>{});   // Ausfall darf die Bedienung nicht aufhalten
+  }
+}
+
+/* Lieblinge vom Flipper uebernehmen. Das Gerät ist die fuehrende Quelle:
+   dort werden sie auch ohne Telefon gesetzt. */
+async function pullFavs(){
+  if(!connected) return;
+  const got=new Set();
+  const done=new Promise(res=>{
+    const w={match:l=>{
+      if(l.startsWith('F ')){ got.add(l.slice(2)); return false; }
+      return l.startsWith('ENDF')||l.startsWith('ERR');
+    }, resolve:res};
+    waiters.push(w);
+    setTimeout(()=>{const i=waiters.indexOf(w); if(i>=0){waiters.splice(i,1); res(null);} },6000);
+  });
+  try{ await send('FAVS'); }catch(e){ return; }
+  const end=await done;
+  if(end===null||String(end).startsWith('ERR')) return;   // altes Gerät: still lassen
+  // Leere Antwort vom Geraet darf lokal gesetzte Lieblinge NICHT wegwischen:
+  // ein neu geflashter Flipper meldet unbedingt "ENDF 0". Statt zu ersetzen
+  // die lokalen Lieblinge ans Geraet nachziehen — dann sind beide Seiten
+  // wieder auf demselben Stand.
+  if(!got.size && FAVS.size) {
+    for(const s of FAVS)
+      send('FAV+ '+s, l=>l.startsWith('OK FAV')||l.startsWith('ERR'), 3000).catch(()=>{});
+    resetOrder(); render(); return;
+  }
+  FAVS.clear(); got.forEach(s=>FAVS.add(s));
+  try{localStorage.setItem('tk_favs',JSON.stringify([...FAVS]));}catch(e){}
+  // resetOrder(): sonst zeigt die Heldkarte weiter die vor dem Verbinden
+  // eingefrorene Reihenfolge, und die vom Geraet geholten Lieblinge stehen
+  // nicht ganz oben.
+  resetOrder(); render();
+}
+
+/* Anzeige-Einstellungen. Bewusst im Erwachsenenmodus versteckt: ein Kind
+   braucht sie nicht, ein Erwachsener mit Seheinschraenkung schon. */
+const EINST=(()=>{ try{return JSON.parse(localStorage.getItem('tk_einst')||'{}');}catch(e){return {};} })();
+function einstAnwenden(){
+  document.documentElement.style.setProperty('--fs-scale', EINST.scale || 1);
+  document.body.dataset.upper = EINST.upper ? '1' : '0';
+}
+function einstSetzen(k,v){
+  EINST[k]=v;
+  try{localStorage.setItem('tk_einst',JSON.stringify(EINST));}catch(e){}
+  einstAnwenden();
+}
+
+const norm=s=>(s||'').toLowerCase()
+  .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
+  .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const imgOf=it=>it && it.img?('img/'+it.img):null;
+const minsOf=it=>it.minutes?it.minutes+' Min.':'';
+
+function build(){
+  SERIES=new Map(); BY_THEME=new Map();
+  for(const it of LIB.items){
+    if(!SERIES.has(it.series)) SERIES.set(it.series,[]);
+    SERIES.get(it.series).push(it);
+    if(!BY_THEME.has(it.theme)) BY_THEME.set(it.theme,new Map());
+    const s=BY_THEME.get(it.theme);
+    if(!s.has(it.series)) s.set(it.series,[]);
+    s.get(it.series).push(it);
+  }
+}
+/* Reihenfolge im Kinderregal: Lieblinge, dann das oft Gespielte, dann alles
+   uebrige alphabetisch. Nichts wird versteckt — was neu dazukommt, bleibt
+   auffindbar, es steht nur weiter unten.
+
+   ⚠️ Die Reihenfolge wird beim Laden EINMAL festgelegt und bleibt dann stehen.
+   Vorher wurde sie bei jedem Zeichnen neu berechnet: nach dem Abspielen zaehlt
+   bump() hoch, und beim Zurueckgehen stand das Regal anders da als vorher.
+   Kinder merken sich Dinge ueber den ORT ("Bibi ist links unten") — ein Regal,
+   das sich unter der Hand umraeumt, nimmt ihnen genau diesen Anker. Die neue
+   Sortierung greift beim naechsten Start. */
+let ORDER=null;
+function seriesOrder(){
+  if(ORDER) return ORDER;
+  const rank=n=>(FAVS.has(n)?0:1);
+  ORDER=[...SERIES.keys()].sort((a,b)=>
+    rank(a)-rank(b) || (COUNTS[b]||0)-(COUNTS[a]||0) || a.localeCompare(b,'de'));
+  return ORDER;
+}
+/* Nur wenn sich die Lieblinge aendern, darf neu geordnet werden — das ist eine
+   bewusste Handlung des Kindes, keine Nebenwirkung des Zuhoerens. */
+function resetOrder(){ ORDER=null; }
+
+/* =========================================================================
+   Kinderansicht
+   ========================================================================= */
+let kid={level:'series',series:null};
+
+/* Farbkarte je Serie — stabil aus dem Namen, damit "Bibi" immer dieselbe Farbe
+   behaelt. ⚠️ Die Farbe IDENTIFIZIERT nichts: 260 Serien auf sechs Toene heisst
+   37 bis 52 Serien je Farbe. Sie ist Schmuck und ein schwacher Ortsanker beim
+   Wiederfinden derselben Karte — kein Merkmal, an dem man eine Serie erkennt.
+   Wer hier Bedeutung hineinlegt, baut auf Sand. */
+function tintOf(name){
+  let h=0;
+  for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0;
+  return 't'+(h%6+1);
+}
+
+function cardFor(opts){
+  const b=el('button','card '+tintOf(opts.tintKey||opts.name)
+             +(opts.held?' held':'')+(opts.stapel?' stapel':''));
+  // Der Knopf sagt selbst, was er tut — das Bild allein traegt fuer Screenreader
+  // nichts, und "52 Folgen" steht nur als Kleinstschrift daneben.
+  // Tipp OEFFNET die Buehne — auch bei Einzelfolgen — und startet nicht sofort.
+  // Deshalb liest der Screenreader in beiden Faellen "oeffnen", nicht "abspielen".
+  // Der Umlaut ist absichtlich — 'oeffnen' liest eine deutsche Sprachausgabe
+  // zeichenweise als "oh-e-...", nicht als Wort.
+  // Kein aria-pressed: der Knopf schaltet nichts um, ein Tipp oeffnet die
+  // Buehne. Der Lieblings-Zustand steht stattdessen im Namen — so ist er auch
+  // ohne Umschalter-Semantik hoerbar.
+  const fav = opts.favKey && FAVS.has(opts.favKey);
+  b.setAttribute('aria-label',
+    opts.name + (fav?', Liebling':'') + (opts.stapel? ', '+opts.sub+', öffnen' : ', öffnen'));
+  const heart=el('span','fav','♥');
+  heart.setAttribute('aria-hidden','true');
+  // ⛔ KORRIGIERT 12.09.2026: hier stand `opts.fav`. Zwei Zeilen darueber wird
+  // `fav` aus `favKey` berechnet — genau dafuer. `opts.fav` wird aber nur an
+  // EINEM der zwei cardFor()-Aufrufe uebergeben (Serienregal), am zweiten
+  // (Folgenliste im Stapel) ist es `undefined`. Dort fehlte das Herz also
+  // immer, obwohl die Folge ein Liebling sein konnte. Der Screenreader sagte
+  // "Liebling" (Zeile 843 nutzt korrekt `fav`) — sichtbar war nichts.
+  // Merke: zwei Namen fuer dieselbe Sache, einer davon optional.
+  heart.style.display=fav?'block':'none';
+  if(fav) b.classList.add('fav-an');   // traegt das Wippen, s. @keyframes wippen
+  b.appendChild(heart);
+  const pic=el('div','pic');
+  const src=imgOf(opts.item);
+  if(src){
+    const im=el('img'); im.src=src; im.alt='';
+    im.loading='lazy';
+    // Dekodieren aus dem Hauptthread heraushalten: 260 Bilder à 400x400 sind
+    // zusammen ein dreistelliger MB-Betrag an Bitmap, wenn alles synchron faellt.
+    im.decoding='async';
+    pic.appendChild(im);
+  }
+  else pic.appendChild(el('div','noimg','♪'));
+  b.appendChild(pic);
+  // Bei der Heldkarte liegen Bild und Text nebeneinander, der Text braucht
+  // deshalb einen eigenen Kasten.
+  const txt=opts.held?el('div','txt'):b;
+  txt.appendChild(el('div','nm',opts.name));
+  if(opts.sub) txt.appendChild(el('div','cnt',opts.sub));
+  if(opts.held) b.appendChild(txt);
+
+  // Langes Druecken = Liebling. Dieselbe Geste wie am Flipper (langes OK),
+  // damit Gerät und Telefon sich gleich bedienen lassen.
+  if(opts.favKey){
+    let timer=null, fired=false, wachsen=null;
+    const kurzMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const start=()=>{
+      fired=false;
+      // Die 600 ms sichtbar machen: das Herz waechst waehrend des Haltens auf.
+      // Ohne das haelt das Kind den Finger auf eine voellig reglose Karte und
+      // erfaehrt erst hinterher, ob etwas passiert ist.
+      if(!kurzMotion && !FAVS.has(opts.favKey)){
+        heart.style.display='block';
+        wachsen=heart.animate?.(
+          [{transform:'scale(0)',opacity:0},{transform:'scale(1.15)',opacity:1}],
+          {duration:600,easing:'ease-out',fill:'forwards'});
+      }
+      timer=setTimeout(()=>{
+        timer=null; fired=true; wachsen=null;
+        setFav(opts.favKey, !FAVS.has(opts.favKey));
+        const an=FAVS.has(opts.favKey);
+        heart.getAnimations?.().forEach(a=>a.cancel());
+        heart.style.display=an?'block':'none';
+        // aria-label spiegelt jetzt den Lieblings-Zustand (statt aria-pressed
+        // an einem Knopf, der nichts umschaltet).
+        b.setAttribute('aria-label',
+          opts.name + (an?', Liebling':'') + (opts.stapel? ', '+opts.sub+', öffnen' : ', öffnen'));
+        if(an && !kurzMotion)
+          heart.animate?.([{transform:'scale(1.15)'},{transform:'scale(1)'}],
+                          {duration:200,easing:'cubic-bezier(.34,1.56,.64,1)'});
+        say(an?'♥ '+opts.favKey:'Liebling entfernt',1800);
+      },600);
+    };
+    const cancel=()=>{
+      if(timer){clearTimeout(timer);timer=null;}
+      // Losgelassen, bevor es griff: das angefangene Herz wieder zuruecknehmen.
+      if(wachsen){
+        wachsen.cancel(); wachsen=null;
+        heart.style.display=FAVS.has(opts.favKey)?'block':'none';
+      }
+    };
+    b.addEventListener('pointerdown',start);
+    ['pointerup','pointerleave','pointercancel'].forEach(e=>b.addEventListener(e,cancel));
+    b.addEventListener('contextmenu',e=>e.preventDefault());
+    b.onclick=()=>{ if(fired){ fired=false; return; } opts.go(); };
+  }else{
+    b.onclick=opts.go;
+  }
+  return b;
+}
+
+/* Eine Karte, die eine zufaellige Folge startet. Neugier war in der Forschung
+   zu Freude an Kinderprodukten der staerkste Einzelfaktor — staerker als
+   Belohnungen oder Abzeichen. Und sie loest nebenbei das Mengenproblem: 260
+   Serien kann ein Kind, das nicht liest, nicht durchsuchen.
+   Bewusst OHNE Belohnungsschleife: kein Punktestand, keine Serie, kein Abzeichen. */
+function zufallKarte(){
+  const b=el('button','card zufall');
+  b.appendChild(el('div','wuerfel','🎲'));
+  b.appendChild(el('div','nm','Überrasch mich'));
+  b.onclick=()=>{
+    const alle=LIB.items||[];
+    if(!alle.length) return;
+    play(alle[Math.floor(Math.random()*alle.length)]);
+  };
+  return b;
+}
+
+/* Kopfbild fuehren: im Regal die oberste Figur, in einer Serie deren eigene.
+   In der Bibliothek aus — dort liest jemand. */
+function kopfbild(it){
+  const b=$('#kopfbild');
+  if(!b) return;          // Schmuck darf die Seite nicht kippen
+  const src=imgOf(it);
+  if(src){ b.src=src; b.hidden=false; } else b.hidden=true;
+}
+
+function renderKid(){
+  const view=$('#view'); view.innerHTML='';
+  let einzug=0;   // gestaffelter Einzug, hart gedeckelt (s. unten)
+  $('#back').classList.toggle('on',kid.level!=='series');
+  const grid=el('div','shelf');
+
+  if(kid.level==='series'){
+    $('#title').textContent='Meine Geschichten';
+    const order=seriesOrder();
+    kopfbild((SERIES.get(order[0])||[])[0]);
+    const favCount=order.filter(n=>FAVS.has(n)).length;
+
+    const oeffne=name=>{
+      const eps=SERIES.get(name);
+      return ()=>{ if(eps.length===1){ play(eps[0]); }
+                   else { kid={level:'eps',series:name}; renderKid(); } };
+    };
+    const serienKarte=(name,held)=>{
+      const eps=SERIES.get(name);
+      return cardFor({ item:eps[0], name, held, fav:FAVS.has(name), favKey:name,
+                       // Stapel = "hier ist mehr als eins drin". Ohne dieses Zeichen
+                       // ist fuer ein nicht lesendes Kind nicht erkennbar, ob ein
+                       // Tipp sofort abspielt oder ein Untermenue oeffnet.
+                       stapel: eps.length>1,
+                       sub: eps.length===1?null:eps.length+' Folgen', go:oeffne(name) });
+    };
+
+    // Reihenfolge: Held, restliche Lieblinge, Überraschung, Trenner, alle anderen.
+    // Die Überraschung steht bewusst NACH den Lieblingen statt zwischen ihnen:
+    // oben gehört zusammen, was dem Kind gehört; die Würfelkarte leitet von dort
+    // in den großen Rest über.
+    let rest=order;
+    // Heldkarte nur mit echtem Grund. Ohne Lieblinge und ohne Hörverlauf wäre
+    // sie bloß die alphabetisch erste Serie — eine Hervorhebung, die nichts
+    // bedeutet, und das fällt Kindern als Willkür auf.
+    if(order.length && (favCount>0 || (COUNTS[order[0]]||0)>0)){
+      grid.appendChild(serienKarte(order[0],true));
+      rest=order.slice(1);
+    }
+    const restFav=rest.filter(n=>FAVS.has(n));
+    const restRest=rest.filter(n=>!FAVS.has(n));
+    restFav.forEach(n=>grid.appendChild(serienKarte(n,false)));
+    grid.appendChild(zufallKarte());
+    if(restRest.length && (favCount>0))
+      grid.appendChild(el('div','shelfsep','Alle anderen'));
+    restRest.forEach(n=>grid.appendChild(serienKarte(n,false)));
+  }else{
+    $('#title').textContent=kid.series;
+    kopfbild((SERIES.get(kid.series)||[])[0]);
+    for(const it of SERIES.get(kid.series)||[]){
+      grid.appendChild(cardFor({
+        item:it, name:it.episode, tintKey:it.series,
+        sub:minsOf(it)||null, go:()=>play(it)
+      }));
+    }
+  }
+  // Gestaffelter Einzug NUR fuer die ersten Karten: 20 ms Versatz, Deckel bei 7.
+  // Ueber alle 260 Karten gelegt waere die letzte erst nach ueber 5 Sekunden da —
+  // aus Belebung wuerde Warten.
+  grid.querySelectorAll('.card').forEach(c=>{
+    if(einzug>=7) return;
+    c.classList.add('rein');
+    c.style.animationDelay=(einzug*20)+'ms';
+    einzug++;
+  });
+  view.appendChild(grid);
+}
+
+/* =========================================================================
+   Abspielen — ein Tipp OEFFNET die Folge, er spielt sie nicht mehr sofort.
+   Erst der grosse gruene Knopf startet. Das kostet einen Schritt, bringt
+   aber dreierlei: die Beschreibung wird sichtbar, das Starten ist eine
+   bewusste Handlung, und ohne Flipper ist am ausgegrauten Knopf ohne ein
+   Wort erkennbar, dass es gerade nicht geht.
+   ========================================================================= */
+function play(it){ oeffneBuehne(it); }
+
+function oeffneBuehne(it){
+  STAGE_IT=it;
+  showStage(it,'');
+  const d=descOf(it);
+  const box=$('#stagedesc');
+  box.innerHTML='';
+  if(d.kind==='desc'){
+    box.appendChild(el('p',null,d.text));
+  }else{
+    box.appendChild(el('p','leer',
+      'Zu dieser Folge gibt es keine Beschreibung — sie ließ sich keinem Eintrag bei tonies.com zuordnen.'));
+  }
+  box.scrollTop=0;
+  vorlesenStop();
+  $('#vorlesen').hidden = !vorleseText(it);   // praktisch immer sichtbar
+  zeigeAktion();
+}
+
+/* Welcher Knopf sichtbar ist, haengt NUR am Zustand — nicht daran, wer ihn
+   zuletzt gedrueckt hat. */
+function zeigeAktion(){
+  const laeuft = STAGE_IT && playing===STAGE_IT.path;
+  const go=$('#go'), halt=$('#halt'), lnk=$('#stagelink');
+  go.classList.toggle('on',!laeuft);
+  halt.classList.toggle('on',laeuft);
+  go.disabled = !connected;
+  halt.disabled = !connected;
+  // Der Verbindungsweg erscheint nur, wenn er gebraucht wird UND etwas bringt.
+  lnk.classList.toggle('on', !connected && !!navigator.bluetooth);
+  if(!connected)
+    setStageState(navigator.bluetooth
+      ? 'Der Flipper ist nicht verbunden.'
+      : 'Dieser Browser kann kein Bluetooth. Auf dem iPhone geht Safari hier nicht.');
+  else if(!laeuft) setStageState('');
+}
+
+let starteLaeuft=false;
+async function starte(it){
+  if(!connected){ say('Erst den Flipper verbinden.',3000); return; }
+  // Reentrancy-Riegel: ein wartendes Kind tippt sonst nach zwei Sekunden
+  // erneut, und jeder Tipp erzeugt einen weiteren PLAY-Warter und einen
+  // weiteren bump().
+  if(starteLaeuft) return;
+  starteLaeuft=true;
+  const go=$('#go'); go.disabled=true;
+  setStageState('Moment …');
+  try{
+    const r=await send('PLAY '+it.path,l=>l.startsWith('OK PLAY')||l.startsWith('ERR'),6000);
+    if(r&&r.startsWith('OK')){
+      playing=it.path; bump(it.series);
+      setStageState('Läuft. Der Flipper muss auf der Box liegen.');
+    }else{
+      setStageState(r?'Das hat der Flipper nicht gefunden.':'Der Flipper antwortet nicht.');
+    }
+  }catch(e){ setStageState('Das hat nicht geklappt.'); }
+  finally{ starteLaeuft=false; }
+  // Kein render() hier: renderKid()/renderLib() lesen weder playing noch
+  // STAGE_IT — der Aufruf zeichnete das komplette Regal (1400 Elemente) HINTER
+  // der Vollbild-Buehne neu, ohne einen sichtbaren Unterschied zu bewirken.
+  zeigeAktion();
+}
+
+let STAGE_OPENER=null;   // die Karte, die die Buehne aufgerufen hat — fuer die Fokus-Rueckgabe
+function showStage(it,state){
+  const st=$('#stage');
+  const warOffen=st.classList.contains('on');
+  st.className=(warOffen?'on ':'')+tintOf(it.series);  // Farbe der Serie
+  const src=imgOf(it), im=$('#stageimg');
+  if(src){ im.src=src; im.style.display='block'; } else im.style.display='none';
+  $('#stagenm').textContent=it.episode;
+  // Bei Einzelfolgen ist der Serienname derselbe wie der Folgentitel. Beides
+  // untereinander zu zeigen liest sich wie ein Fehler — dann nur einmal.
+  $('#stagesr').textContent = (it.series===it.episode) ? '' : it.series;
+  setStageState(state||'');
+  st.classList.add('on');
+  if(!warOffen){
+    // Tastatur-Falle: 262 Bedienelemente blieben sonst hinter der Vollbild-
+    // Buehne im Tab-Pfad. `inert` an den Geschwistern nimmt sie samt Fokus
+    // aus dem Baum, bis hideStage() das zuruecknimmt.
+    document.querySelector('header').inert=true;
+    document.querySelector('main').inert=true;
+    STAGE_OPENER=document.activeElement;
+    // Fokus in die Buehne, damit Tab dort bleibt und Screenreader die Ansage
+    // vom Anfang der Modal-Beschriftung liest.
+    setTimeout(()=>{ $('#stageback').focus(); },0);
+  }
+}
+const setStageState=t=>{ $('#stagest').textContent=t; };
+
+/* Vorlesen. Zwei Wege, in dieser Reihenfolge:
+   1. eine vorproduzierte Datei unter tts/<name>.mp3 (Piper, Stimme "Frank")
+   2. die Stimme des Browsers als Rueckfall
+   Piper selbst spricht das Wyoming-Protokoll (binaeres TCP auf .220:10200) und
+   ist aus einem Browser NICHT erreichbar — deshalb vorproduziert, nicht live.
+   Erzeugt werden die Dateien mit tools/gen_vorlesen.py. */
+let TTS_AUDIO=null, TTS_LAUF=0, TTS_WECKER=null;
+/* ⚠️ Ein Stopp muss auch WARTENDES entwerten, nicht nur Laufendes.
+   Gemessen: `vorlesenStop()` liess den 600-ms-Wecker der Stimmenliste stehen —
+   die App las 1200 ms nach dem Stopp los, mit Knopf auf "aus". Und ein
+   wartender Audio-Fehler sprach danach doppelt. Deshalb ein Laufzaehler:
+   was nicht mehr der aktuelle Lauf ist, tut nichts. */
+function vorlesenStop(){
+  TTS_LAUF++;
+  if(TTS_WECKER){ clearTimeout(TTS_WECKER); TTS_WECKER=null; }
+  if(TTS_AUDIO){ TTS_AUDIO.onerror=null; TTS_AUDIO.onended=null;
+                 try{TTS_AUDIO.pause();}catch(e){} TTS_AUDIO=null; }
+  try{ if(window.speechSynthesis){ speechSynthesis.onvoiceschanged=null;
+                                   speechSynthesis.cancel(); } }catch(e){}
+  const b=$('#vorlesen'); if(b) b.setAttribute('aria-pressed','false');
+}
+/* Was vorgelesen wird. Ohne Beschreibung der NAME — 298 der 652 Folgen haben
+   keinen Inhaltstext, und bei denen blieb der Knopf vorher unsichtbar. Fuer ein
+   Kind, das nicht liest, ist der gesprochene Name sogar das Wichtigere. */
+function vorleseText(it){
+  const d=(descOf(it).text||'').trim();
+  if(d) return d;
+  const serie=(it.series||'').trim(), folge=(it.episode||'').trim();
+  return serie && folge && serie!==folge ? `${serie}. ${folge}.` : (folge||serie);
+}
+
+function vorlesenStart(it){
+  const text=vorleseText(it);
+  if(!text) return;
+  const b=$('#vorlesen');
+  b.setAttribute('aria-pressed','true');
+  const lauf=++TTS_LAUF, aktuell=()=>lauf===TTS_LAUF;
+  const fertig=()=>{ if(!aktuell()) return; TTS_AUDIO=null; b.setAttribute('aria-pressed','false'); };
+  /* Bei einem fatalen Ladefehler melden BEIDE Wege: das `error`-Ereignis UND
+     das abgelehnte play()-Versprechen. Ohne diesen Riegel sprach der Rueckfall
+     jeden Text zweimal (gemessen). */
+  let gefallen=false;
+  const zurueck=()=>{ if(gefallen||!aktuell()) return; gefallen=true;
+                      TTS_AUDIO=null; browserStimme(text,fertig,aktuell); };
+  if(it.tts){
+    const a=new Audio('tts/'+it.tts);
+    TTS_AUDIO=a;
+    a.onended=fertig; a.onerror=zurueck;
+    a.play().catch(zurueck);
+  }else{
+    browserStimme(text,fertig,aktuell);
+  }
+}
+function browserStimme(text,fertig,aktuell){
+  aktuell = aktuell || (()=>true);
+  if(!window.speechSynthesis){ say('Dieses Gerät kann nicht vorlesen.',3500); fertig(); return; }
+  const los=()=>{
+    if(!aktuell()) return;            // zwischenzeitlich gestoppt
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='de-DE'; u.rate=.95;        // etwas langsamer, fuer Kinder
+    const de=deutscheStimme();
+    if(de) u.voice=de;
+    u.onend=fertig; u.onerror=fertig;
+    speechSynthesis.speak(u);
+  };
+  if(deutscheStimme() || !('onvoiceschanged' in speechSynthesis)) return los();
+  // Einmal auf die Liste warten, aber nicht endlos.
+  let ab=false;
+  const einmal=()=>{ if(ab) return; ab=true; speechSynthesis.onvoiceschanged=null;
+                     TTS_WECKER=null; los(); };
+  speechSynthesis.onvoiceschanged=einmal;
+  TTS_WECKER=setTimeout(einmal,600);   // global, damit vorlesenStop ihn loeschen kann
+}
+function hideStage(){
+  vorlesenStop();          // ⚠️ SONST liest die Stimme weiter, waehrend der
+                           //    Stopp-Knopf mit der Buehne verschwindet.
+  $('#stage').classList.remove('on');
+  STAGE_IT=null;
+  document.querySelector('header').inert=false;
+  document.querySelector('main').inert=false;
+  // Fokus zurueck an die Karte, die die Buehne geoeffnet hat — sonst landet der
+  // Tastaturnutzer nach dem Zurueck-Knopf am Seitenanfang und muss sich neu
+  // orientieren.
+  if(STAGE_OPENER && STAGE_OPENER.focus){ try{ STAGE_OPENER.focus(); }catch(e){} }
+  STAGE_OPENER=null;
+}
+
+// Escape schliesst die Buehne. Fuer Erwachsene mit Tastatur: der Zurueck-Knopf
+// oben links ist per Finger geplant, per Tastatur ist Escape der Weg zurueck.
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && $('#stage').classList.contains('on')) hideStage();
+});
+
+$('#halt').onclick=async()=>{
+  setStageState('Stopp …');
+  try{ await send('STOP',l=>l.startsWith('OK STOP'),4000); }catch(e){}
+  // Kein render() hier: das Regal liest weder playing noch STAGE_IT, siehe
+  // starte(). Nur die Buehne aktualisiert sich ueber zeigeAktion().
+  playing=null; setStageState(''); zeigeAktion();
+};
+$('#go').onclick=()=>{ if(STAGE_IT) starte(STAGE_IT); };
+$('#vorlesen').onclick=()=>{
+  const an=$('#vorlesen').getAttribute('aria-pressed')==='true';
+  an ? vorlesenStop() : (STAGE_IT && vorlesenStart(STAGE_IT));
+};
+$('#stagelink').onclick=async()=>{
+  setStageState('Verbinde …');
+  const ok=await connect();
+  zeigeAktion();
+  // Die Nutzergeste liegt vor und die Absicht ist eindeutig: gleich losspielen.
+  if(ok && STAGE_IT) starte(STAGE_IT);
+};
+$('#stageback').onclick=()=>{ hideStage(); STAGE_IT=null; };
+
+/* =========================================================================
+   Bibliothek für Erwachsene — verstecktes langes Drücken auf die Überschrift
+   (dasselbe Prinzip wie das Setup in der Flipper-App: für Kinder nicht
+   offensichtlich, für Erwachsene sofort auffindbar, sobald man es weiß).
+   ========================================================================= */
+let lib={level:'themes',theme:null,series:null,item:null}, query='';
+
+function searchHits(){
+  const q=norm(query.trim());
+  if(q.length<2) return null;
+  const w=q.split(/\s+/);
+  return LIB.items.filter(it=>{
+    const hay=norm(it.series+' '+it.episode+' '+(it.desc||''));
+    return w.every(t=>hay.includes(t));
+  }).slice(0,300);
+}
+/* NUR die echte Inhaltsbeschreibung. Die Kapitelnamen aus tonies.json wurden
+   frueher als Ersatz gezeigt ("01 Ela das All eroberte, 02 ...") — das sind
+   blosse Titelnummern, auf die wir keinen Einfluss haben, und sie sagen einem
+   Kind nichts ueber die Geschichte. Lieber ehrlich nichts zeigen. */
+function descOf(it){
+  return it.desc ? {text:it.desc,kind:'desc'} : {text:'',kind:'none'};
+}
+function rowFor(it,showSeries){
+  const b=el('button','row');
+  const src=imgOf(it);
+  if(src){const im=el('img');im.src=src;im.alt='';im.loading='lazy';b.appendChild(im);}
+  const t=el('div','txt');
+  t.appendChild(el('div','t',it.episode));
+  const sub=[showSeries?it.series:null,minsOf(it)].filter(Boolean).join(' · ');
+  if(sub) t.appendChild(el('div','s',sub));
+  const d=descOf(it);
+  if(d.text) t.appendChild(el('div','d',d.text));
+  b.appendChild(t);
+  b.onclick=()=>{ lib={level:'item',theme:it.theme,series:it.series,item:it}; renderLib(); };
+  return b;
+}
+
+/* Die Einstellungen. Grosse Knoepfe mit aria-pressed statt eines Schiebers:
+   der Zustand ist damit auch fuer Screenreader und ohne Farbe erkennbar. */
+function einstFlaeche(){
+  const box=el('div','einst');
+  box.appendChild(el('h3',null,'Anzeige'));
+
+  const r1=el('div','reihe');
+  [['Normal',1],['Größer',1.15],['Groß',1.3],['Sehr groß',1.5]].forEach(([txt,v])=>{
+    const b=el('button',null,txt);
+    b.setAttribute('aria-pressed', (EINST.scale||1)===v ? 'true':'false');
+    b.onclick=()=>{ einstSetzen('scale',v); render(); };
+    r1.appendChild(b);
+  });
+  box.appendChild(el('div','libhint','Schriftgröße'));
+  box.appendChild(r1);
+
+  const r2=el('div','reihe');
+  [['Gemischt',false],['GROSSBUCHSTABEN',true]].forEach(([txt,v])=>{
+    const b=el('button',null,txt);
+    b.setAttribute('aria-pressed', !!EINST.upper===v ? 'true':'false');
+    b.onclick=()=>{ einstSetzen('upper',v); render(); };
+    r2.appendChild(b);
+  });
+  box.appendChild(el('div','libhint','Namen schreiben'));
+  box.appendChild(r2);
+  return box;
+}
+
+function renderLib(){
+  // Fokus und Cursorposition retten, bevor view.innerHTML='' das Suchfeld
+  // zerstoert — sonst verliert das neu gebaute #q nach dem ersten Zeichen
+  // die Tastatur, wenn der Suchzweig nicht greift (< 2 Zeichen oder null
+  // Treffer).
+  const wasFocus = document.activeElement && document.activeElement.id==='q';
+  const caret = wasFocus ? document.activeElement.selectionStart : null;
+
+  const view=$('#view'); view.innerHTML='';
+  $('#back').classList.add('on');
+
+  const sw=el('div','searchwrap');
+  const q=el('input'); q.id='q'; q.type='search'; q.value=query;
+  q.placeholder='Suchen: Serie, Folge, Text …';
+  // aria-label sichert die Beschriftung nach dem ersten Tippen — der Platzhalter
+  // verschwindet dann, ohne den Namen des Feldes zu ersetzen.
+  q.setAttribute('aria-label','Suchen: Serie, Folge, Text');
+  q.addEventListener('input',e=>{query=e.target.value; renderLib();});
+  sw.appendChild(q); view.appendChild(sw);
+  if(wasFocus){
+    // In allen Rueckgabepfaden Fokus wieder herstellen — nicht nur im
+    // Treffer-Zweig, sonst verschwindet die Tastatur nach dem ersten Zeichen.
+    q.focus();
+    if(caret!=null){ try{ q.setSelectionRange(caret,caret); }catch(e){} }
+  }
+
+  // Die Detailansicht liegt auf lib.level==='item'. rowFor() setzt sie und
+  // ruft renderLib() erneut, `query` bleibt aber gesetzt — sonst faellt der
+  // Klick auf einen Suchtreffer wieder in den Suchzweig und die Detailansicht
+  // ist aus der Suche unerreichbar.
+  const hits = lib.level==='item' ? null : searchHits();
+  if(hits){
+    $('#title').textContent='Suche';
+    if(!hits.length){ view.appendChild(el('div','empty','Nichts gefunden.')); return; }
+    const l=el('div','shelf'); hits.forEach(it=>l.appendChild(rowFor(it,true)));
+    view.appendChild(l); q.focus(); return;
+  }
+
+  if(lib.level==='themes'){
+    $('#title').textContent='Bibliothek';
+    view.appendChild(einstFlaeche());
+    view.appendChild(el('div','libhint',
+      LIB.items.length+' Folgen · '+BY_THEME.size+' Themen · langes Drücken auf die Überschrift führt zurück zum Kindermodus'));
+    const l=el('div','shelf');
+    [...BY_THEME.keys()].sort().forEach(th=>{
+      const series=BY_THEME.get(th); let n=0; series.forEach(a=>n+=a.length);
+      const b=el('button','row');
+      const t=el('div','txt');
+      t.appendChild(el('div','t',th));
+      t.appendChild(el('div','s',series.size+' Serien · '+n+' Folgen'));
+      b.appendChild(t);
+      b.onclick=()=>{lib={level:'series',theme:th};renderLib();};
+      l.appendChild(b);
+    });
+    view.appendChild(l); return;
+  }
+  if(lib.level==='series'){
+    $('#title').textContent=lib.theme;
+    view.appendChild(el('div','libhint',
+      'Das Herz stellt eine Serie im Kindermodus ganz nach oben.'));
+    const series=BY_THEME.get(lib.theme)||new Map();
+    const l=el('div','shelf');
+    [...series.keys()].sort((a,b)=>a.localeCompare(b,'de')).forEach(name=>{
+      const eps=series.get(name);
+      const wrap=el('div','rowwrap');
+      const b=el('button','row');
+      const src=imgOf(eps[0]);
+      if(src){const im=el('img');im.src=src;im.alt='';im.loading='lazy';b.appendChild(im);}
+      const t=el('div','txt');
+      t.appendChild(el('div','t',name));
+      t.appendChild(el('div','s',eps.length===1?'1 Folge':eps.length+' Folgen'));
+      b.appendChild(t);
+      b.onclick=()=>{lib={level:'eps',theme:lib.theme,series:name};renderLib();};
+      wrap.appendChild(b);
+
+      const fav=el('button','favbtn','♥');
+      fav.classList.toggle('on',FAVS.has(name));
+      fav.setAttribute('aria-label','Liebling: '+name);
+      // aria-pressed spiegelt den Zustand — ohne das meldet der Screenreader
+      // Name und Rolle unveraendert und der Nutzer weiss nicht, ob er den
+      // Zustand geaendert hat.
+      fav.setAttribute('aria-pressed', FAVS.has(name)?'true':'false');
+      // Kein confirm(): derselbe Knopf nimmt es sofort zurueck.
+      fav.onclick=()=>{
+        setFav(name,!FAVS.has(name));
+        const an=FAVS.has(name);
+        fav.classList.toggle('on',an);
+        fav.setAttribute('aria-pressed', an?'true':'false');
+      };
+      wrap.appendChild(fav);
+      l.appendChild(wrap);
+    });
+    view.appendChild(l); return;
+  }
+  if(lib.level==='eps'){
+    $('#title').textContent=lib.series;
+    const eps=(BY_THEME.get(lib.theme)||new Map()).get(lib.series)||[];
+    const l=el('div','shelf'); eps.forEach(it=>l.appendChild(rowFor(it,false)));
+    view.appendChild(l); return;
+  }
+
+  const it=lib.item;
+  $('#title').textContent=it.series;
+  const d=el('div','detail');
+  const src=imgOf(it);
+  if(src){const im=el('img');im.src=src;im.alt='';d.appendChild(im);}
+  d.appendChild(el('h1',null,it.episode));
+  d.appendChild(el('div','sub',[it.series,minsOf(it),it.theme].filter(Boolean).join(' · ')));
+  const de=descOf(it);
+  if(de.kind==='desc') d.appendChild(el('p','desc',de.text));
+  else d.appendChild(el('p','desc none',
+    'Für diese Folge gibt es keine Beschreibung — sie ließ sich keinem Eintrag bei tonies.com zuordnen.'));
+  const b=el('button','playbig','Abspielen');
+  b.onclick=()=>play(it);
+  d.appendChild(b);
+  d.appendChild(el('div','meta',it.path));
+  view.appendChild(d);
+}
+
+/* =========================================================================
+   Modus, Navigation
+   ========================================================================= */
+function mode(){ return document.body.dataset.mode; }
+function render(){ mode()==='kid'?renderKid():renderLib(); }
+
+function setMode(m){
+  document.body.dataset.mode=m;
+  if(m==='kid'){ kid={level:'series',series:null}; }
+  else { lib={level:'themes'}; query=''; }
+  window.scrollTo(0,0);
+  render();
+  say(m==='kid'?'Kindermodus':'Bibliothek — langes Drücken auf die Überschrift führt zurück',3200);
+}
+
+/* Langes Drücken auf die Überschrift schaltet um. Bewusst 800 ms und bewusst
+   auf dem Titel: ein Kind drückt dort nicht lange, ein Erwachsener findet es
+   sofort, sobald er es einmal weiß. */
+(function(){
+  const t=$('#title'); let timer=null;
+  const start=()=>{ timer=setTimeout(()=>{ timer=null; setMode(mode()==='kid'?'lib':'kid'); },800); };
+  const cancel=()=>{ if(timer){clearTimeout(timer);timer=null;} };
+  t.addEventListener('pointerdown',start);
+  ['pointerup','pointerleave','pointercancel'].forEach(e=>t.addEventListener(e,cancel));
+  t.addEventListener('contextmenu',e=>e.preventDefault());
+})();
+
+$('#back').onclick=()=>{
+  if(mode()==='kid'){ kid={level:'series',series:null}; }
+  else if(lib.level==='item'){ lib={level:'eps',theme:lib.theme,series:lib.series}; }
+  // Aktive Suche zaehlt als eigener Schritt: sonst wirft ein Druck aus der
+  // Trefferliste ohne Vorwarnung ganz aus der Bibliothek heraus.
+  else if(query && lib.level==='themes'){ query=''; }
+  else if(lib.level==='eps'){ lib={level:'series',theme:lib.theme}; }
+  else if(lib.level==='series'){ lib={level:'themes'}; }
+  else { setMode('kid'); return; }
+  window.scrollTo(0,0); render();
+};
+$('#link').onclick=()=>{
+  if(connected){ try{dev.gatt.disconnect();}catch(e){} say('Getrennt'); }
+  else connect().then(ok=>{ if(ok) say('Verbunden'); });
+};
+
+einstAnwenden();
+fetch('library.json').then(r=>r.json()).then(d=>{
+  LIB=d; build(); render();
+}).catch(e=>{
+  $('#view').appendChild(el('div','empty','library.json fehlt: '+e.message));
+});
+
+// =============================================================================
+// Browser-Kompatibilitäts-Prüfung für BLE
+// =============================================================================
+(function checkBLECompatibility() {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const hasWebBluetooth = navigator.bluetooth !== undefined;
+  const notice = $('#browser-notice');
+  const noticeText = $('#browser-notice-text');
+  
+  if (isIOS && !hasWebBluetooth) {
+    // Safari auf iOS - Lauftext für kompakte Anzeige
+    noticeText.innerHTML = '<span class="marquee">📱 Das iPhone kann kein Web Bluetooth. Nutze einen Bluetooth-Browser wie Bluefy oder die ESP8266-Brücke.</span>';
+    notice.hidden = false;
+    console.log('iOS Safari erkannt - WebBluetooth nicht verfügbar');
+  } else if (isIOS && hasWebBluetooth) {
+    // Bluetooth-Browser auf iOS, z. B. Bluefy
+    noticeText.innerHTML = '✅ BLE verfügbar!';
+    notice.hidden = false;
+    console.log('iOS mit WebBluetooth-Browser erkannt');
+    setTimeout(() => { notice.hidden = true; }, 5000);
+  } else if (!hasWebBluetooth) {
+    // Älterer Desktop-Browser ohne WebBluetooth
+    noticeText.innerHTML = '⚠️ Dieser Browser kann kein Bluetooth. Bitte nutze Chrome oder Edge.';
+    notice.hidden = false;
+    console.log('Browser ohne WebBluetooth erkannt');
+  }
+})();
+
+</script>
+</body>
+</html>

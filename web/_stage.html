@@ -1,0 +1,39 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>stage</title>
+<style>html,body{margin:0;padding:0}iframe{width:375px;height:812px;border:0;display:block}</style>
+</head><body>
+<!-- Temporaere Pruefseite: oeffnet im Kind-Modus den "laeuft gerade"-Schirm,
+     optional mit den Dunkelmodus-Farben. ?dark=1 -->
+<iframe id="f" src="/index.html"></iframe>
+<script>
+const dark=new URLSearchParams(location.search).has('dark');
+const f=document.getElementById('f');
+f.onload=()=>setTimeout(()=>{
+  const d=f.contentDocument, w=f.contentWindow;
+  // Den Dunkelmodus NICHT von Hand nachbauen — eine handgepflegte Liste vergisst
+  // genau die Variable, die man gerade geaendert hat (hier: --warn-ink, wodurch
+  // der Test den behobenen Fehler weiter meldete). Stattdessen den echten
+  // prefers-color-scheme-Block aus dem Stylesheet der Zielseite auslesen.
+  let darkCss='';
+  if(dark){
+    for(const sheet of d.styleSheets){
+      try{
+        for(const rule of sheet.cssRules){
+          if(rule.type===CSSRule.MEDIA_RULE && /dark/.test(rule.conditionText))
+            for(const r of rule.cssRules) darkCss+=r.cssText;
+        }
+      }catch(e){}
+    }
+    if(!darkCss){ document.title='FEHLER: kein dark-Block gefunden'; return; }
+  }
+  const st=d.createElement('style');
+  st.textContent='*{transition:none!important;animation:none!important}'+darkCss;
+  d.head.appendChild(st);
+  // `let LIB` ist keine window-Eigenschaft — Daten deshalb selbst holen.
+  fetch('/library.json').then(r=>r.json()).then(lib=>{
+    const it=lib.items.find(x=>x.img&&x.episode.length>20)||lib.items[0];
+    w.oeffneBuehne(it);   // zeigt Bild, Beschreibung und die Aktionsknoepfe
+    document.title='ok';
+  });
+},2200);
+</script>
+</body></html>

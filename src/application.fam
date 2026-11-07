@@ -1,0 +1,13 @@
+App(
+    appid="toniekids",
+    name="OpenTonies",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="toniekids_app",
+    stack_size=8 * 1024,
+    fap_category="NFC",
+    fap_icon="toniekids.png",
+    fap_description="Kinderfreundliche Tonie-Auswahl mit Bildern; emuliert die Figur direkt fuer die Toniebox.",
+    fap_author="ElektroGandhi",
+    fap_weburl="https://github.com/ElektroGandhi/OpenToniesFlipperZero",
+    fap_version="1.1",
+)

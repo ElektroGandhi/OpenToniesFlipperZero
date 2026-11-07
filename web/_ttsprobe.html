@@ -1,0 +1,127 @@
+<!doctype html><meta charset="utf-8"><title>tts-probe</title>
+<pre id="out">start</pre>
+<iframe id="f" src="index.html" width="375" height="600"></iframe>
+<script>
+const L=[]; const P=s=>{L.push(s);document.getElementById('out').textContent=L.join('\n');};
+const schlaf=ms=>new Promise(r=>setTimeout(r,ms));
+const ECHT={path:'Alea Aquarius/Die Magie der Nixen.nfc',series:'Alea Aquarius',
+  episode:'Die Magie der Nixen',theme:'Hörbuch',tts:'09da7d8debc386f5.mp3',
+  desc:'Spannende Geschichten mit Meerwert.'};
+const FEHLT={path:'x/y.nfc',series:'Serie X',episode:'Folge Y',theme:'Hörbuch',
+  tts:'gibtesnicht0000.mp3',desc:'Beschreibung der fehlenden Datei.'};
+const OHNE ={path:'x/z.nfc',series:'Serie Z',episode:'Folge Z',theme:'Hörbuch',desc:'Text ohne Tondatei.'};
+
+document.getElementById('f').onload=async()=>{
+ const w=document.getElementById('f').contentWindow;
+ try{
+  // ---- Instrumentierung ----------------------------------------------
+  let speaks=[],cancels=0,voices=[];
+  const stub={getVoices:()=>voices,
+    speak(u){speaks.push(u.text); if(u.onend) setTimeout(()=>u.onend(),20);},
+    cancel(){cancels++;}, onvoiceschanged:null, pending:false, speaking:false};
+  Object.defineProperty(w,'speechSynthesis',{value:stub,configurable:true,writable:true});
+  w.SpeechSynthesisUtterance=function(t){this.text=t;};        // damit u.voice=<Attrappe> nicht wirft
+  const origAudio=w.Audio, insts=[];
+  w.Audio=function(src){const a=new origAudio(src);insts.push(a);return a;};
+  const origBS=w.browserStimme; let bs=0, bsherkunft=[];
+  w.browserStimme=function(t,f){bs++;
+    bsherkunft.push((new Error().stack||'').split('\n').slice(1,3).join(' | '));
+    return origBS(t,f);};
+  const pressed=()=>w.document.querySelector('#vorlesen').getAttribute('aria-pressed');
+  P('instrumentiert: speechSynthesis ersetzt='+(w.speechSynthesis===stub)
+    +' onvoiceschanged-in='+('onvoiceschanged' in w.speechSynthesis)
+    +' browserStimme ersetzt='+(w.browserStimme!==origBS));
+
+  // ---- A1 Positivkontrolle: vorhandene MP3 ---------------------------
+  voices=[{lang:'de-DE',name:'Attrappe'}];
+  speaks=[];bs=0;insts.length=0;
+  w.vorlesenStart(ECHT); await schlaf(700);
+  const a1=insts[0];
+  P('\nA1 vorhandene MP3: browserStimme-Aufrufe='+bs+'  speak='+speaks.length
+    +'  audio.paused='+(a1&&a1.paused)+'  audio.error='+(a1&&a1.error?a1.error.code:'null')
+    +'  currentTime='+(a1?a1.currentTime.toFixed(2):'-')+'  aria-pressed='+pressed());
+  w.vorlesenStop(); await schlaf(50);
+
+  // ---- A2 fehlende MP3 (404) -----------------------------------------
+  speaks=[];bs=0;insts.length=0;bsherkunft=[];
+  w.vorlesenStart(FEHLT); await schlaf(900);
+  const a2=insts[0];
+  P('A2 fehlende MP3 (404): browserStimme-Aufrufe='+bs+'  speak='+speaks.length
+    +'  audio.error='+(a2&&a2.error?a2.error.code:'null')+'  aria-pressed='+pressed()
+    +'  gesprochen='+JSON.stringify(speaks));
+  bsherkunft.forEach((h,i)=>P('   Aufruf '+(i+1)+' aus: '+h));
+  w.vorlesenStop(); await schlaf(50);
+
+  // ---- B Stop waehrend die Stimmliste noch fehlt ----------------------
+  voices=[];                        // keine deutsche Stimme -> Warte-Pfad
+  speaks=[];bs=0;cancels=0;
+  w.vorlesenStart(OHNE);            // setzt onvoiceschanged + 600-ms-Wecker
+  w.vorlesenStop();                 // Nutzer drueckt sofort Stopp
+  P('\nB nach Stopp sofort: speak='+speaks.length+' cancel='+cancels+' aria-pressed='+pressed());
+  await schlaf(1200);
+  P('B 1200 ms spaeter:    speak='+speaks.length+' aria-pressed='+pressed()
+    +'  gesprochen='+JSON.stringify(speaks));
+  w.vorlesenStop(); await schlaf(50);
+
+  // ---- C Ueberlagerung: MP3 laeuft, dann faellt der Wecker ------------
+  voices=[]; speaks=[];bs=0;insts.length=0;
+  let zustandBeimSprechen=null;
+  stub.speak=function(u){speaks.push(u.text);
+    zustandBeimSprechen=insts.map(a=>({paused:a.paused,ended:a.ended,err:a.error?a.error.code:null}));
+    if(u.onend) setTimeout(()=>u.onend(),20);};
+  w.vorlesenStart(OHNE);            // Wecker laeuft (600 ms)
+  await schlaf(100);
+  w.oeffneBuehne(ECHT);             // Folgenwechsel -> ruft vorlesenStop()
+  w.vorlesenStart(ECHT);            // MP3 startet
+  await schlaf(900);
+  P('\nC Wechsel im Wartefenster: speak='+speaks.length+' ('+JSON.stringify(speaks)+')'
+    +'  MP3-Zustand IM MOMENT des speak='+JSON.stringify(zustandBeimSprechen));
+  P('C  => MP3 lief, waehrend die Stimme startete: '
+    +(speaks.length>0 && zustandBeimSprechen && zustandBeimSprechen.some(z=>!z.paused && !z.err)));
+  w.vorlesenStop(); await schlaf(50);
+
+  // ---- D Buehne schliessen waehrend vorgelesen wird -------------------
+  voices=[{lang:'de-DE',name:'Attrappe'}];
+  speaks=[];bs=0;cancels=0;insts.length=0;
+  w.vorlesenStart(ECHT); await schlaf(400);
+  const d=insts[0];
+  const liefVor=d&&!d.paused;
+  w.hideStage(); await schlaf(400);
+  P('\nD hideStage bei laufender MP3: vorher paused='+(!liefVor)
+    +'  nachher paused='+(d&&d.paused)+' currentTime='+(d?d.currentTime.toFixed(2):'-')
+    +'  cancel-Aufrufe='+cancels+'  aria-pressed='+pressed());
+  // dasselbe fuer die Browserstimme
+  speaks=[];cancels=0;
+  w.vorlesenStart(OHNE); await schlaf(100);
+  w.hideStage(); await schlaf(200);
+  P('D hideStage bei Browserstimme: speak='+speaks.length+' cancel-Aufrufe='+cancels);
+  w.vorlesenStop();
+
+  // ---- E Escape schliesst ebenfalls ohne Stopp? ----------------------
+  speaks=[];insts.length=0;
+  w.oeffneBuehne(ECHT); w.vorlesenStart(ECHT); await schlaf(300);
+  const e1=insts[0]; cancels=0;   // erst JETZT zaehlen: oeffneBuehne stoppt selbst
+  const offen1=w.document.querySelector('#stage').classList.contains('on');
+  w.document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  await schlaf(300);
+  P('\nE Escape bei laufender MP3: Buehne war offen='+offen1
+    +' jetzt offen='+w.document.querySelector('#stage').classList.contains('on')
+    +' paused='+(e1&&e1.paused)+' cancel-Aufrufe='+cancels);
+  w.vorlesenStop();
+
+  // ---- G Stopp, BEVOR der 404 zurueckkommt ---------------------------
+  voices=[{lang:'de-DE',name:'Attrappe'}];
+  speaks=[];bs=0;cancels=0;insts.length=0;
+  stub.speak=function(u){speaks.push(u.text); if(u.onend) setTimeout(()=>u.onend(),20);};
+  w.vorlesenStart(FEHLT);           // Datei fehlt, Fehler kommt erst noch
+  w.vorlesenStop();                 // Nutzer drueckt sofort Stopp
+  await schlaf(900);
+  P('\nG Stopp vor dem 404: browserStimme-Aufrufe='+bs+' speak='+speaks.length
+    +' aria-pressed='+pressed()+' gesprochen='+JSON.stringify(speaks));
+  w.vorlesenStop();
+
+  await schlaf(200);
+  P('\nFERTIG');
+ }catch(err){ P('AUSNAHME: '+err+'\n'+err.stack); }
+};
+</script>

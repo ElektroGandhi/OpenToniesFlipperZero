@@ -1,0 +1,58 @@
+# Build-Artefakte
+dist/
+build/
+*.o
+*.d
+*.elf
+*.map
+__pycache__/
+.ufbt/
+.vscode/
+.DS_Store
+
+# ----------------------------------------------------------------------------
+# Urheberrechtlich geschuetztes Fremdmaterial – NIEMALS committen (siehe NOTICE.md)
+# ----------------------------------------------------------------------------
+# Aus Tonie-Produktbildern abgeleitete Icons + Bild-Cache:
+icons/
+icons_p/
+icons_s/
+imgcache/
+# Vollstaendige Tonie-Datenbank (nur per URL referenzieren):
+tonies.json
+# Bibliothek der Web-App: dieselbe Sorte Fremdmaterial wie oben. library.json traegt
+# die Inhaltstexte von tonies.com, web/img/ die verkleinerten Produktbilder (~7 MB).
+# Beides ist jederzeit mit tools/gen_library.py neu erzeugbar - das Werkzeug wird
+# committet, das Ergebnis nicht (gleiche Logik wie tonies.json + gen_durations.py).
+web/library.json
+web/img/
+# Zwischenlager von update_tonies.py: fremde NFC-Dumps aus der
+# Gemeinschaftssammlung. Werkzeug wird committet, Dumps nie.
+tools/tonies_repo/
+# Fremde SLIX-L-Dumps / Figuren:
+flipper-zero-tonies-master/
+Toniebox Figuren/
+*.nfc
+
+
+# tools/durations.txt = Spieldauer-Bibliothek (Titel->Minuten). Wird BEWUSST committet,
+# damit die Community sie per Pull Request erweitern kann (regenerierbar/erweiterbar via
+# tools/gen_durations.py). Enthaelt nur Titel + Minuten, keine Dumps/Bilder.
+
+# Vorproduzierte Sprachausgabe (Piper) — erzeugt, nicht committet
+web/tts/
+
+# Laufzeit-Ergebnis der App, kein Quellcode (persoenliche Vorlieben).
+favorites.txt
+
+# Loecher, die die Muster oben offen liessen (gemessen 12.09.2026):
+icons*/
+ICONS*/
+*.NFC
+web/IMG/
+
+# Erzeugte Demo-Bibliothek und Bild-Cache
+tools/demo/
+tools/imgcache/
+tools/gen4.log
+tools/matches.json

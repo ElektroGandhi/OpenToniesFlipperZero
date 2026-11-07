@@ -1,0 +1,34 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>warte</title>
+<style>html,body{margin:0}iframe{width:375px;height:812px;border:0}</style></head><body>
+<iframe id="f" src="/index.html"></iframe>
+<script>
+const f=document.getElementById('f');
+f.onload=()=>setTimeout(()=>{
+  const d=f.contentDocument, w=f.contentWindow;
+  fetch('/library.json').then(r=>r.json()).then(lib=>{
+    const it=lib.items.find(x=>!x.desc);   // eine OHNE Beschreibung — hier war der Knopf weg
+    if(!it){ document.title=JSON.stringify({fehler:'keine Folge mit tts'}); return; }
+    w.oeffneBuehne(it);
+    setTimeout(()=>{
+      const b=d.querySelector('#vorlesen');
+      const r={folge:it.episode.slice(0,30), tts:it.tts,
+               knopf_da:!!b, knopf_sichtbar:b?!b.hidden:null,
+               desc_len:(it.desc||'').length};
+      // Fehler im iframe mitschneiden
+      r.fehler=[]; w.onerror=(m)=>r.fehler.push(String(m).slice(0,90));
+      const urspr=w.console.error; w.console.error=(...a)=>{r.fehler.push('console: '+String(a[0]).slice(0,80)); urspr&&urspr(...a);};
+      // Gibt es ueberhaupt Sprachausgabe im Browser?
+      r.speech = !!w.speechSynthesis;
+      r.stimmen = w.speechSynthesis ? w.speechSynthesis.getVoices().length : 0;
+      // ECHTEN Klick ausloesen
+      b.click();
+      setTimeout(()=>{
+        r.gedrueckt = b.getAttribute('aria-pressed');
+        r.status = (d.querySelector('#stagest')||{}).textContent;
+        r.meldung = (d.querySelector('#msg')||{}).textContent;
+        document.title=JSON.stringify(r);
+      },2500);
+    },700);
+  });
+},2500);
+</script></body></html>

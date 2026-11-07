@@ -1,0 +1,36 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>warte</title>
+<style>html,body{margin:0}iframe{width:375px;height:812px;border:0}</style></head><body>
+<iframe id="f" src="/index.html"></iframe>
+<script>
+const f=document.getElementById('f');
+f.onload=()=>setTimeout(()=>{
+  const d=f.contentDocument, w=f.contentWindow;
+  // Bluetooth vortaeuschen: sonst laesst sich der Weg aus der Sackgasse gar
+  // nicht pruefen — headless Chrome hat kein navigator.bluetooth.
+  try{ Object.defineProperty(w.navigator,'bluetooth',{value:{},configurable:true}); }catch(e){}
+  fetch('/library.json').then(r=>r.json()).then(lib=>{
+    w.oeffneBuehne(lib.items.find(x=>x.img)||lib.items[0]);
+    setTimeout(()=>{
+      const r={};
+      const treffer=(sel)=>{
+        const e=d.querySelector(sel); if(!e) return 'fehlt';
+        const b=e.getBoundingClientRect();
+        if(b.width<1) return 'unsichtbar';
+        // vier Punkte quer ueber den Knopf: wie viel davon ist wirklich anklickbar?
+        let gut=0, n=0;
+        for(const fx of [.2,.4,.6,.8]) for(const fy of [.3,.7]){
+          n++;
+          const el=d.elementFromPoint(b.left+b.width*fx, b.top+b.height*fy);
+          if(el && (el===e || e.contains(el))) gut++;
+        }
+        return Math.round(gut/n*100)+'% erreichbar ('+Math.round(b.width)+'x'+Math.round(b.height)+')';
+      };
+      r.zurueck=treffer('#stageback');
+      r.verbinden=treffer('#stagelink');
+      r.abspielen=treffer('#go');
+      r.text=(d.querySelector('#stagest')||{}).textContent;
+      document.title=JSON.stringify(r);
+    },600);
+  });
+},2200);
+</script></body></html>

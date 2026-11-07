@@ -13,7 +13,7 @@ jobs:
     name: Repo-Prüfung
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: python3 tools/pruefe_repo.py --selbsttest
       - run: python3 tools/pruefe_repo.py
       - name: Python-Syntax
@@ -36,7 +36,7 @@ jobs:
             channel: release
             index: https://update.flipperzero.one/firmware/directory.json
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: flipperdevices/flipperzero-ufbt-action@v0.1.4
         id: ufbt
         with:
